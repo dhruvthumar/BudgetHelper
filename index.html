@@ -1,318 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        :root{--bg:#fafafa;--card:#fff;--text:#000;--text2:#666;--text3:#999;--border:#eee;--accent:#000;--green:#00c896;--red:#ff5252;--blue:#4a90d9;--purple:#9b59b6}
-        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-        
-        /* Nav */
-        .nav{background:var(--card);border-bottom:1px solid var(--border);padding:.75rem 1rem;position:sticky;top:0;z-index:100}
-        .nav-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
-        .logo{font-weight:600;font-size:1.1rem;display:flex;align-items:center;gap:.5rem}
-        .nav-center{display:flex;gap:.25rem}
-        .user-btn{padding:.4rem .8rem;border:1px solid var(--border);background:var(--card);border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:500;transition:all .15s}
-        .user-btn:hover{border-color:var(--text2)}
-        .user-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-        .user-btn.u1.active{background:var(--blue);border-color:var(--blue)}
-        .user-btn.u2.active{background:var(--purple);border-color:var(--purple)}
-        .nav-right{display:flex;gap:.5rem;align-items:center}
-        select,input,button{font:inherit}
-        .sel{padding:.35rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:.8rem}
-        .btn-icon{width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:1rem}
-        
-        /* Main */
-        .main{max-width:900px;margin:0 auto;padding:1.5rem 1rem}
-        
-        /* Stats Cards */
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
-        .stat-card{background:var(--card);border-radius:12px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-        .stat-card.highlight{border-left:4px solid var(--accent)}
-        .stat-card.u1{border-left-color:var(--blue)}
-        .stat-card.u2{border-left-color:var(--purple)}
-        .stat-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem}
-        .stat-value{font-size:1.75rem;font-weight:600}
-        .stat-sub{font-size:.75rem;color:var(--text2);margin-top:.25rem}
-        .stat-sub .pct{font-weight:600}
-        .stat-sub .pct.u1{color:var(--blue)}
-        .stat-sub .pct.u2{color:var(--purple)}
-        
-        /* Comparison View */
-        .comparison{background:var(--card);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-        .comparison-title{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:1rem}
-        .comparison-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
-        .comparison-row:last-child{margin-bottom:0}
-        .comparison-label{width:80px;font-size:.8rem;color:var(--text2)}
-        .comparison-bar{flex:1;height:24px;background:var(--bg);border-radius:4px;overflow:hidden;display:flex}
-        .comparison-fill{height:100%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#fff;min-width:40px}
-        .comparison-fill.u1{background:var(--blue)}
-        .comparison-fill.u2{background:var(--purple)}
-        .comparison-values{display:flex;justify-content:space-between;font-size:.75rem;margin-top:.25rem}
-        .comparison-values span:first-child{color:var(--blue)}
-        .comparison-values span:last-child{color:var(--purple)}
-        
-        /* Add Button */
-        .add-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;margin:0 auto 1.5rem;padding:.6rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:50px;cursor:pointer;font-weight:500;font-size:.875rem}
-        .add-btn.u1{background:var(--blue)}
-        .add-btn.u2{background:var(--purple)}
-        .add-btn:hover{opacity:.9}
-        
-        /* Form */
-        .form-card{background:var(--card);border-radius:12px;padding:1rem;margin-bottom:1.5rem;display:none}
-        .form-card.show{display:block}
-        .form-user{display:flex;gap:.5rem;margin-bottom:.75rem}
-        .form-user-btn{flex:1;padding:.5rem;border:1px solid var(--border);background:var(--card);border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:500}
-        .form-user-btn.active{color:#fff}
-        .form-user-btn.u1.active{background:var(--blue);border-color:var(--blue)}
-        .form-user-btn.u2.active{background:var(--purple);border-color:var(--purple)}
-        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-        .form-grid input,.form-grid select{padding:.6rem;border:1px solid var(--border);border-radius:6px;width:100%}
-        .form-actions{grid-column:span 2;display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem}
-        .btn{padding:.5rem 1rem;border:none;border-radius:6px;cursor:pointer;font-weight:500;font-size:.875rem}
-        .btn-p{background:var(--accent);color:#fff}
-        .btn-s{background:transparent;border:1px solid var(--border)}
-        
-        /* Section */
-        .section{background:var(--card);border-radius:12px;padding:1rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-        .section-title{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:1rem}
-        
-        /* Charts */
-        .charts{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
-        .chart-box{background:var(--card);border-radius:12px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-        .chart-wrap{height:180px;position:relative}
-        
-        /* Budgets */
-        .budget-item{padding:.75rem;background:var(--bg);border-radius:8px;margin-bottom:.5rem}
-        .budget-item:last-child{margin-bottom:0}
-        .budget-head{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.4rem}
-        .budget-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-        .budget-fill{height:100%;background:var(--accent);border-radius:2px}
-        .budget-fill.warn{background:#ffb700}
-        .budget-fill.over{background:var(--red)}
-        
-        /* Transactions */
-        .trans-item{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid var(--border)}
-        .trans-item:last-child{border-bottom:none}
-        .trans-left{flex:1;display:flex;align-items:center;gap:.75rem}
-        .trans-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#fff;flex-shrink:0}
-        .trans-avatar.u1{background:var(--blue)}
-        .trans-avatar.u2{background:var(--purple)}
-        .trans-info{flex:1}
-        .trans-desc{font-size:.875rem;font-weight:500}
-        .trans-meta{font-size:.7rem;color:var(--text3);display:flex;gap:.5rem;align-items:center;margin-top:.2rem}
-        .trans-cat{background:var(--bg);padding:.1rem .4rem;border-radius:3px;font-size:.65rem;text-transform:uppercase}
-        .trans-right{display:flex;align-items:center;gap:.75rem}
-        .trans-amt{font-weight:600;font-size:.875rem}
-        .income{color:var(--green)}
-        .expense{color:var(--text)}
-        .del-btn{opacity:0;background:none;border:none;color:var(--text3);cursor:pointer;padding:.25rem;font-size:1rem}
-        .trans-item:hover .del-btn{opacity:1}
-        .del-btn:hover{color:var(--red)}
-        
-        /* Empty/Loading */
-        .empty{text-align:center;color:var(--text3);padding:2rem;font-size:.875rem}
-        .loading{text-align:center;padding:2rem}
-        .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        
-        /* Modal */
-        .modal{display:none;position:fixed;inset:0;z-index:1000}
-        .modal.show{display:block}
-        .modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
-        .modal-box{position:relative;max-width:400px;margin:10vh auto;background:var(--card);border-radius:12px;max-height:80vh;overflow:auto}
-        .modal-head{display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid var(--border)}
-        .modal-head h2{font-size:1rem}
-        .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text3)}
-        .modal-body{padding:1rem}
-        .modal-foot{padding:1rem;border-top:1px solid var(--border);text-align:right}
-        .set-group{margin-bottom:1.25rem}
-        .set-label{font-size:.8rem;font-weight:500;margin-bottom:.4rem;display:block}
-        .set-input{width:100%;padding:.6rem;border:1px solid var(--border);border-radius:6px}
-        .set-help{font-size:.7rem;color:var(--text3);margin-top:.3rem}
-        .set-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-        .cat-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem;background:var(--bg);border-radius:6px;margin-bottom:.5rem}
-        .cat-input{width:80px;padding:.4rem;border:1px solid var(--border);border-radius:4px;text-align:right}
-        
-        /* Toast */
-        .toast{position:fixed;bottom:1rem;right:1rem;padding:.6rem 1rem;background:var(--accent);color:#fff;border-radius:6px;font-size:.875rem;z-index:2000;animation:slideIn .3s}
-        .toast.ok{background:var(--green)}
-        .toast.err{background:var(--red)}
-        @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-        
-        /* Responsive */
-        @media(max-width:600px){
-            .charts{grid-template-columns:1fr}
-            .form-grid{grid-template-columns:1fr}
-            .form-actions{grid-column:span 1}
-            .stat-value{font-size:1.5rem}
-            .del-btn{opacity:1}
-            .nav-inner{justify-content:center}
-            .comparison-label{width:60px;font-size:.7rem}
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Budget</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#f5f5f5;--c:#fff;--t:#000;--t2:#555;--t3:#999;--br:#e8e8e8;--bl:#4a90d9;--pu:#9b59b6;--gn:#00c896;--rd:#ff5252}
+body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--t);font-size:14px;overscroll-behavior:none}
+button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
+.n{background:var(--c);border-bottom:1px solid var(--br);padding:10px 12px;position:sticky;top:0;z-index:50}
+.ni{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.logo{font-weight:700;font-size:15px;white-space:nowrap}
+.tabs{display:flex;gap:4px;flex:1;justify-content:center}
+.tab{padding:6px 12px;border:1px solid var(--br);background:var(--c);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap}
+.tab.on{color:#fff}
+.tab[data-v=user1].on{background:var(--bl);border-color:var(--bl)}
+.tab[data-v=user2].on{background:var(--pu);border-color:var(--pu)}
+.tab[data-v=household].on{background:var(--t);border-color:var(--t)}
+.nr{display:flex;gap:6px;align-items:center}
+.sel{padding:5px 8px;border:1px solid var(--br);border-radius:6px;background:var(--c);font-size:12px;font-weight:500}
+.ib{width:32px;height:32px;border:1px solid var(--br);border-radius:6px;background:var(--c);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+.m{max-width:600px;margin:0 auto;padding:12px}
+
+/* Balance */
+.bal{background:var(--c);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.bal-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+.bal-v{font-size:32px;font-weight:700;margin:4px 0 12px}
+.bal-r{display:flex;justify-content:center;gap:24px}
+.bal-i{text-align:center}
+.bal-i .l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+.bal-i .v{font-size:16px;font-weight:600;margin-top:2px}
+.green{color:var(--gn)}.red{color:var(--rd)}
+.bal-p{font-size:11px;color:var(--t2);margin-top:2px}
+
+/* Comparison */
+.cmp{background:var(--c);border-radius:14px;padding:16px;margin-bottom:12px;display:none}
+.cmp.show{display:block}
+.cmp-t{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t2);margin-bottom:12px}
+.cmp-row{margin-bottom:12px}
+.cmp-row:last-child{margin-bottom:0}
+.cmp-rl{font-size:11px;color:var(--t2);margin-bottom:4px}
+.bar-wrap{height:22px;background:var(--bg);border-radius:4px;overflow:hidden;display:flex}
+.bar-f{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;min-width:30px;transition:width .3s}
+.bar-f.b1{background:var(--bl)}.bar-f.b2{background:var(--pu)}
+.cmp-vals{display:flex;justify-content:space-between;font-size:11px;margin-top:4px}
+.cmp-vals span:first-child{color:var(--bl)}
+.cmp-vals span:last-child{color:var(--pu)}
+.cmp-totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;text-align:center;padding-top:14px;border-top:1px solid var(--br)}
+.cmp-totals .v{font-size:16px;font-weight:600;margin-top:2px}
+
+/* Add */
+.add{display:flex;justify-content:center;margin-bottom:12px}
+.add-b{padding:8px 20px;border:none;border-radius:50px;cursor:pointer;font-weight:600;font-size:13px;color:#fff;background:var(--t)}
+.add-b.u1{background:var(--bl)}.add-b.u2{background:var(--pu)}
+
+/* Form */
+.fm{background:var(--c);border-radius:14px;padding:12px;margin-bottom:12px;display:none}
+.fm.show{display:block}
+.fm-u{display:flex;gap:6px;margin-bottom:10px}
+.fm-ub{flex:1;padding:8px;border:1px solid var(--br);background:var(--c);border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;text-align:center}
+.fm-ub.on{color:#fff}
+.fm-ub.u1.on{background:var(--bl);border-color:var(--bl)}
+.fm-ub.u2.on{background:var(--pu);border-color:var(--pu)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fi{padding:8px;border:1px solid var(--br);border-radius:6px;width:100%;font-size:13px;background:var(--c)}
+.fi:focus{outline:none;border-color:var(--t)}
+.fa{grid-column:span 2;display:flex;gap:6px;justify-content:flex-end}
+.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px}
+.bp{background:var(--t);color:#fff}
+.bs{background:var(--bg);color:var(--t2)}
+
+/* Section */
+.sec{background:var(--c);border-radius:14px;padding:12px;margin-bottom:12px}
+.st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t2);margin-bottom:10px}
+.ch{height:160px;position:relative}
+
+/* Budget bars */
+.bi{padding:8px;background:var(--bg);border-radius:6px;margin-bottom:6px}
+.bi:last-child{margin-bottom:0}
+.bh{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.bb{height:3px;background:var(--br);border-radius:2px;overflow:hidden}
+.bf{height:100%;border-radius:2px;background:var(--t);transition:width .3s}
+.bf.w{background:#ffb700}.bf.o{background:var(--rd)}
+
+/* Transactions */
+.ti{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--br)}
+.ti:last-child{border-bottom:none}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.av.a1{background:var(--bl)}.av.a2{background:var(--pu)}
+.tl{flex:1;min-width:0}
+.td{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm{font-size:11px;color:var(--t3);display:flex;gap:6px;align-items:center;margin-top:1px}
+.tc{background:var(--bg);padding:1px 5px;border-radius:3px;font-size:10px;text-transform:uppercase}
+.tr{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ta{font-weight:600;font-size:13px}
+.db{background:none;border:none;color:var(--t3);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1}
+.db:active{color:var(--rd)}
+
+/* Empty / Loading */
+.empty{text-align:center;color:var(--t3);padding:24px;font-size:13px}
+.spin{width:18px;height:18px;border:2px solid var(--br);border-top-color:var(--t);border-radius:50%;animation:sp .5s linear infinite;margin:20px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Charts grid */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+
+/* Modal */
+.mo{display:none;position:fixed;inset:0;z-index:100}
+.mo.show{display:flex;align-items:flex-start;justify-content:center;padding-top:10vh}
+.mo-bg{position:fixed;inset:0;background:rgba(0,0,0,.4)}
+.mo-b{position:relative;width:90%;max-width:380px;background:var(--c);border-radius:14px;max-height:80vh;overflow:auto;z-index:1}
+.mo-h{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--br)}
+.mo-h h2{font-size:15px}
+.mo-x{background:none;border:none;font-size:22px;cursor:pointer;color:var(--t3);padding:0 4px}
+.mo-d{padding:12px}
+.mo-f{padding:12px;border-top:1px solid var(--br);text-align:right}
+.sg{margin-bottom:14px}
+.sl{font-size:12px;font-weight:600;margin-bottom:4px;display:block}
+.si{width:100%;padding:8px;border:1px solid var(--br);border-radius:6px;font-size:13px}
+.sh{font-size:11px;color:var(--t3);margin-top:3px}
+.sr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ci{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--bg);border-radius:6px;margin-bottom:4px;font-size:12px}
+.ci input{width:70px;padding:4px;border:1px solid var(--br);border-radius:4px;text-align:right;font-size:12px}
+
+/* Toast */
+.toast{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);padding:8px 16px;background:var(--t);color:#fff;border-radius:8px;font-size:13px;font-weight:500;z-index:200;white-space:nowrap}
+.toast.ok{background:var(--gn)}.toast.err{background:var(--rd)}
+
+@media(max-width:400px){
+  .cg{grid-template-columns:1fr}
+  .fg{grid-template-columns:1fr}
+  .fa{grid-column:span 1}
+  .tabs{gap:2px}
+  .tab{padding:5px 8px;font-size:11px}
+  .bal-v{font-size:26px}
+}
+</style>
 </head>
 <body>
-    <nav class="nav">
-        <div class="nav-inner">
-            <div class="logo">◐ Budget</div>
-            <div class="nav-center">
-                <button class="user-btn u1" data-view="user1" id="btnUser1">Me</button>
-                <button class="user-btn u2" data-view="user2" id="btnUser2">Partner</button>
-                <button class="user-btn active" data-view="household" id="btnHousehold">Both</button>
-            </div>
-            <div class="nav-right">
-                <select id="month" class="sel"></select>
-                <select id="year" class="sel"></select>
-                <button id="settingsBtn" class="btn-icon">⚙</button>
-            </div>
-        </div>
-    </nav>
+<nav class="n"><div class="ni">
+  <div class="logo">◐ Budget</div>
+  <div class="tabs">
+    <button class="tab" data-v="user1" id="t1">Me</button>
+    <button class="tab" data-v="user2" id="t2">Partner</button>
+    <button class="tab on" data-v="household" id="t3">Both</button>
+  </div>
+  <div class="nr">
+    <select id="mo" class="sel"></select>
+    <button class="ib" id="setBtn">⚙</button>
+  </div>
+</div></nav>
 
-    <main class="main">
-        <!-- Individual View Stats -->
-        <div class="stats-grid" id="individualStats">
-            <div class="stat-card highlight" id="statCardMain">
-                <div class="stat-label">Balance</div>
-                <div class="stat-value" id="balance">$0.00</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Income</div>
-                <div class="stat-value income" id="income">+$0</div>
-                <div class="stat-sub"><span class="pct" id="incomePct">0%</span> of household</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Expenses</div>
-                <div class="stat-value" id="expenses">$0</div>
-                <div class="stat-sub"><span class="pct" id="expensePct">0%</span> of household</div>
-            </div>
-        </div>
-
-        <!-- Household Comparison View -->
-        <div class="comparison" id="comparisonView" style="display:none">
-            <div class="comparison-title">Household Overview</div>
-            
-            <div class="comparison-row">
-                <div class="comparison-label">Income</div>
-                <div style="flex:1">
-                    <div class="comparison-bar">
-                        <div class="comparison-fill u1" id="incomeBar1" style="width:50%">50%</div>
-                        <div class="comparison-fill u2" id="incomeBar2" style="width:50%">50%</div>
-                    </div>
-                    <div class="comparison-values">
-                        <span id="incomeVal1">$0</span>
-                        <span id="incomeVal2">$0</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="comparison-row">
-                <div class="comparison-label">Expenses</div>
-                <div style="flex:1">
-                    <div class="comparison-bar">
-                        <div class="comparison-fill u1" id="expenseBar1" style="width:50%">50%</div>
-                        <div class="comparison-fill u2" id="expenseBar2" style="width:50%">50%</div>
-                    </div>
-                    <div class="comparison-values">
-                        <span id="expenseVal1">$0</span>
-                        <span id="expenseVal2">$0</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-top:1.5rem;text-align:center">
-                <div>
-                    <div class="stat-label">Total Income</div>
-                    <div style="font-size:1.25rem;font-weight:600;color:var(--green)" id="totalIncome">$0</div>
-                </div>
-                <div>
-                    <div class="stat-label">Total Expenses</div>
-                    <div style="font-size:1.25rem;font-weight:600" id="totalExpenses">$0</div>
-                </div>
-                <div>
-                    <div class="stat-label">Net Balance</div>
-                    <div style="font-size:1.25rem;font-weight:600" id="totalBalance">$0</div>
-                </div>
-            </div>
-        </div>
-
-        <button class="add-btn" id="addBtn">+ Add Transaction</button>
-
-        <div class="form-card" id="formCard">
-            <div class="form-user">
-                <button type="button" class="form-user-btn u1 active" id="formUser1">Me</button>
-                <button type="button" class="form-user-btn u2" id="formUser2">Partner</button>
-            </div>
-            <form id="txForm" class="form-grid">
-                <input type="date" id="txDate" required>
-                <input type="text" id="txDesc" placeholder="Description" required>
-                <select id="txCat" required><option value="">Category</option></select>
-                <input type="number" id="txAmt" placeholder="0.00" step="0.01" required>
-                <select id="txType"><option value="Expense">Expense</option><option value="Income">Income</option></select>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-s" id="cancelBtn">Cancel</button>
-                    <button type="submit" class="btn btn-p" id="submitBtn">Save</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="charts">
-            <div class="chart-box">
-                <div class="section-title">By Category</div>
-                <div class="chart-wrap"><canvas id="catChart"></canvas></div>
-            </div>
-            <div class="chart-box">
-                <div class="section-title">Daily Trend</div>
-                <div class="chart-wrap"><canvas id="dayChart"></canvas></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Budgets</div>
-            <div id="budgets"><div class="loading"><div class="spinner"></div></div></div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Transactions</div>
-            <div id="transactions"><div class="loading"><div class="spinner"></div></div></div>
-        </div>
-    </main>
-
-    <!-- Settings Modal -->
-    <div class="modal" id="modal">
-        <div class="modal-bg" id="modalBg"></div>
-        <div class="modal-box">
-            <div class="modal-head">
-                <h2>Settings</h2>
-                <button class="modal-close" id="modalClose">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="set-group">
-                    <label class="set-label">Google Script URL</label>
-                    <input type="text" id="apiUrl" class="set-input" placeholder="https://script.google.com/macros/s/AKfycbxXB1lzyifEU1KhkoYI5jxZsLeSNoMRFma4tjHEw1zIPs6A1WtdInlQbCmrESf4T_GV/exec">
-                    <p class="set-help">Your deployed Google Apps Script Web App URL</p>
-                </div>
-                <div class="set-group">
-                    <label class="set-label">User Names</label>
-                    <div class="set-row">
-                        <input type="text" id="userName1" class="set-input" placeholder="Your name" style="border-left:3px solid var(--blue)">
-                        <input type="text" id="userName2" class="set-input" placeholder="Partner's name" style="border-left:3px solid var(--purple)">
-                    </div>
-                </div>
-                <div class="set-group">
-                    <label class="set-label">Category Budgets (per person)</label>
-                    <div id="catList"></div>
-                </div>
-            </div>
-            <div class="modal-foot">
-                <button class="btn btn-p" id="saveSettings">Save Changes</button>
-            </div>
-        </div>
+<main class="m">
+  <!-- Individual View -->
+  <div class="bal" id="balCard">
+    <div class="bal-l">Balance</div>
+    <div class="bal-v" id="bal">$0</div>
+    <div class="bal-r">
+      <div class="bal-i"><span class="l">Income</span><span class="v green" id="inc">$0</span><div class="bal-p" id="incP"></div></div>
+      <div class="bal-i"><span class="l">Expenses</span><span class="v" id="exp">$0</span><div class="bal-p" id="expP"></div></div>
     </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="app.js"></script>
+  <!-- Household Comparison -->
+  <div class="cmp" id="cmpView">
+    <div class="cmp-t">Household</div>
+    <div class="cmp-row">
+      <div class="cmp-rl">Income</div>
+      <div class="bar-wrap"><div class="bar-f b1" id="ib1">0%</div><div class="bar-f b2" id="ib2">0%</div></div>
+      <div class="cmp-vals"><span id="iv1">$0</span><span id="iv2">$0</span></div>
+    </div>
+    <div class="cmp-row">
+      <div class="cmp-rl">Expenses</div>
+      <div class="bar-wrap"><div class="bar-f b1" id="eb1">0%</div><div class="bar-f b2" id="eb2">0%</div></div>
+      <div class="cmp-vals"><span id="ev1">$0</span><span id="ev2">$0</span></div>
+    </div>
+    <div class="cmp-totals">
+      <div><div class="bal-l">Income</div><div class="v green" id="hi">$0</div></div>
+      <div><div class="bal-l">Expenses</div><div class="v" id="he">$0</div></div>
+      <div><div class="bal-l">Balance</div><div class="v" id="hb">$0</div></div>
+    </div>
+  </div>
+
+  <div class="add"><button class="add-b" id="addBtn">+ Add</button></div>
+
+  <div class="fm" id="fm">
+    <div class="fm-u">
+      <button type="button" class="fm-ub u1 on" id="fu1">Me</button>
+      <button type="button" class="fm-ub u2" id="fu2">Partner</button>
+    </div>
+    <form id="txF" class="fg">
+      <input type="date" id="fDate" class="fi" required>
+      <input type="text" id="fDesc" class="fi" placeholder="Description" required>
+      <select id="fCat" class="fi" required><option value="">Category</option></select>
+      <input type="number" id="fAmt" class="fi" placeholder="0.00" step="0.01" inputmode="decimal" required>
+      <select id="fType" class="fi"><option value="Expense">Expense</option><option value="Income">Income</option></select>
+      <div class="fa">
+        <button type="button" class="btn bs" id="fCancel">Cancel</button>
+        <button type="submit" class="btn bp" id="fSave">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="cg">
+    <div class="sec"><div class="st">Categories</div><div class="ch"><canvas id="cC"></canvas></div></div>
+    <div class="sec"><div class="st">Daily</div><div class="ch"><canvas id="dC"></canvas></div></div>
+  </div>
+
+  <div class="sec"><div class="st">Budgets</div><div id="bud"><div class="spin"></div></div></div>
+  <div class="sec"><div class="st">Transactions</div><div id="txs"><div class="spin"></div></div></div>
+</main>
+
+<!-- Settings -->
+<div class="mo" id="modal">
+  <div class="mo-bg" id="moBg"></div>
+  <div class="mo-b">
+    <div class="mo-h"><h2>Settings</h2><button class="mo-x" id="moX">×</button></div>
+    <div class="mo-d">
+      <div class="sg"><label class="sl">Google Script URL</label><input type="text" id="apiI" class="si" placeholder="https://script.google.com/..."><p class="sh">Your deployed Apps Script URL</p></div>
+      <div class="sg"><label class="sl">Names</label><div class="sr"><input type="text" id="n1" class="si" placeholder="You" style="border-left:3px solid var(--bl)"><input type="text" id="n2" class="si" placeholder="Partner" style="border-left:3px solid var(--pu)"></div></div>
+      <div class="sg"><label class="sl">Budgets (per person)</label><div id="catL"></div></div>
+    </div>
+    <div class="mo-f"><button class="btn bp" id="savS">Save</button></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

@@ -1,452 +1,329 @@
-// State
-let API = localStorage.getItem('budgetApi') || '';
-let DATA = JSON.parse(localStorage.getItem('budgetData') || 'null');
-let VIEW = localStorage.getItem('budgetView') || 'household'; // user1, user2, household
-let FORM_USER = 'user1';
-let catChart = null, dayChart = null;
+var API = window.BUDGET_API || '';
+var D = null; // data
+var V = localStorage.getItem('bv') || 'household';
+var FU = 'user1';
+var cC = null, dC = null;
+var $ = function(id) { return document.getElementById(id); };
 
-// Elements
-const $ = id => document.getElementById(id);
-const monthEl = $('month'), yearEl = $('year');
+// Disable Chart.js animations globally for performance
+Chart.defaults.animation = false;
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
 
-// Init
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', function() {
+    // Month selector - current year only
+    var now = new Date();
+    var ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    $('mo').innerHTML = ms.map(function(m, i) {
+        return '<option value="' + (i + 1) + '">' + m + '</option>';
+    }).join('');
+    $('mo').value = now.getMonth() + 1;
+    $('fDate').valueAsDate = now;
 
-function init() {
-    // Populate month/year
-    const now = new Date();
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    monthEl.innerHTML = months.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
-    yearEl.innerHTML = [2024, 2023, 2022].map(y => `<option value="${y}">${y}</option>`).join('');
-    monthEl.value = now.getMonth() + 1;
-    yearEl.value = now.getFullYear();
-    $('txDate').valueAsDate = now;
+    // Try load cached data instantly
+    try { D = JSON.parse(localStorage.getItem('bd')); } catch(e) {}
+    if (D) { names(); draw(); }
 
     // Events
-    $('addBtn').onclick = toggleForm;
-    $('cancelBtn').onclick = hideForm;
-    $('txForm').onsubmit = addTransaction;
-    $('settingsBtn').onclick = showModal;
-    $('modalClose').onclick = hideModal;
-    $('modalBg').onclick = hideModal;
-    $('saveSettings').onclick = saveSettings;
-    monthEl.onchange = yearEl.onchange = loadData;
+    $('t1').onclick = function() { sv('user1'); };
+    $('t2').onclick = function() { sv('user2'); };
+    $('t3').onclick = function() { sv('household'); };
+    $('addBtn').onclick = tf;
+    $('fCancel').onclick = hf;
+    $('fu1').onclick = function() { sfu('user1'); };
+    $('fu2').onclick = function() { sfu('user2'); };
+    $('txF').onsubmit = addTx;
+    $('setBtn').onclick = sm;
+    $('moX').onclick = hm;
+    $('moBg').onclick = hm;
+    $('savS').onclick = ss;
+    $('mo').onchange = load;
 
-    // View switcher
-    $('btnUser1').onclick = () => setView('user1');
-    $('btnUser2').onclick = () => setView('user2');
-    $('btnHousehold').onclick = () => setView('household');
+    sv(V);
 
-    // Form user switcher
-    $('formUser1').onclick = () => setFormUser('user1');
-    $('formUser2').onclick = () => setFormUser('user2');
+    if (!API) { sm(); toast('Set API URL', 'err'); }
+    else load();
+});
 
-    // Show cached data immediately
-    if (DATA) {
-        updateUserNames();
-        render();
-    }
+function sv(v) {
+    V = v;
+    localStorage.setItem('bv', v);
+    $('t1').className = 'tab' + (v === 'user1' ? ' on' : '');
+    $('t2').className = 'tab' + (v === 'user2' ? ' on' : '');
+    $('t3').className = 'tab' + (v === 'household' ? ' on' : '');
+    $('t1').setAttribute('data-v', 'user1');
+    $('t2').setAttribute('data-v', 'user2');
+    $('t3').setAttribute('data-v', 'household');
 
-    if (!API) {
-        showModal();
-        toast('Set your Google Script URL first', 'err');
-    } else {
-        loadData();
-    }
+    var ab = $('addBtn');
+    ab.className = 'add-b' + (v === 'user1' ? ' u1' : v === 'user2' ? ' u2' : '');
 
-    setView(VIEW);
+    $('balCard').style.display = v === 'household' ? 'none' : '';
+    $('cmpView').className = 'cmp' + (v === 'household' ? ' show' : '');
+
+    if (v !== 'household') sfu(v);
+    if (D) draw();
 }
 
-function setView(view) {
-    VIEW = view;
-    localStorage.setItem('budgetView', view);
-
-    // Update nav buttons
-    $('btnUser1').classList.toggle('active', view === 'user1');
-    $('btnUser2').classList.toggle('active', view === 'user2');
-    $('btnHousehold').classList.toggle('active', view === 'household');
-
-    // Update add button color
-    const addBtn = $('addBtn');
-    addBtn.classList.remove('u1', 'u2');
-    if (view === 'user1') addBtn.classList.add('u1');
-    if (view === 'user2') addBtn.classList.add('u2');
-
-    // Update stat card color
-    const statCard = $('statCardMain');
-    statCard.classList.remove('u1', 'u2');
-    if (view === 'user1') statCard.classList.add('u1');
-    if (view === 'user2') statCard.classList.add('u2');
-
-    // Set form user to match view
-    if (view === 'user1' || view === 'user2') {
-        setFormUser(view);
-    }
-
-    // Show/hide appropriate views
-    $('individualStats').style.display = view === 'household' ? 'none' : 'grid';
-    $('comparisonView').style.display = view === 'household' ? 'block' : 'none';
-
-    if (DATA) render();
+function sfu(u) {
+    FU = u;
+    $('fu1').className = 'fm-ub u1' + (u === 'user1' ? ' on' : '');
+    $('fu2').className = 'fm-ub u2' + (u === 'user2' ? ' on' : '');
+    $('fSave').style.background = u === 'user1' ? 'var(--bl)' : 'var(--pu)';
 }
 
-function setFormUser(user) {
-    FORM_USER = user;
-    $('formUser1').classList.toggle('active', user === 'user1');
-    $('formUser2').classList.toggle('active', user === 'user2');
-    
-    // Update submit button color
-    const submitBtn = $('submitBtn');
-    submitBtn.style.background = user === 'user1' ? 'var(--blue)' : 'var(--purple)';
+function names() {
+    if (!D || !D.u) return;
+    $('t1').textContent = D.u.user1;
+    $('t2').textContent = D.u.user2;
+    $('fu1').textContent = D.u.user1;
+    $('fu2').textContent = D.u.user2;
 }
 
-function updateUserNames() {
-    if (!DATA || !DATA.users) return;
-    
-    const u1 = DATA.users.user1 || 'Me';
-    const u2 = DATA.users.user2 || 'Partner';
-    
-    $('btnUser1').textContent = u1;
-    $('btnUser2').textContent = u2;
-    $('formUser1').textContent = u1;
-    $('formUser2').textContent = u2;
-    $('userName1').value = u1;
-    $('userName2').value = u2;
+function tf() {
+    var f = $('fm'), show = !f.classList.contains('show');
+    f.classList.toggle('show', show);
+    $('addBtn').textContent = show ? '× Cancel' : '+ Add';
+    if (show) $('fDesc').focus();
 }
 
-function toggleForm() {
-    const form = $('formCard');
-    const btn = $('addBtn');
-    const show = !form.classList.contains('show');
-    form.classList.toggle('show', show);
-    btn.textContent = show ? '× Cancel' : '+ Add Transaction';
-    if (show) $('txDesc').focus();
+function hf() {
+    $('fm').classList.remove('show');
+    $('addBtn').textContent = '+ Add';
+    $('txF').reset();
+    $('fDate').valueAsDate = new Date();
 }
 
-function hideForm() {
-    $('formCard').classList.remove('show');
-    $('addBtn').textContent = '+ Add Transaction';
-    $('txForm').reset();
-    $('txDate').valueAsDate = new Date();
-}
-
-async function loadData() {
+function load() {
     if (!API) return;
-    
-    try {
-        const m = monthEl.value, y = yearEl.value;
-        const res = await fetch(`${API}?action=getAllData&month=${m}&year=${y}`);
-        const data = await res.json();
-        
-        if (data.error) throw new Error(data.error);
-        
-        DATA = data;
-        localStorage.setItem('budgetData', JSON.stringify(data));
-        updateUserNames();
-        render();
-    } catch (e) {
-        console.error(e);
-        toast('Failed to load data', 'err');
-    }
+    var m = $('mo').value;
+    fetch(API + '?action=load&m=' + m)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) throw new Error(data.error);
+            D = data;
+            try { localStorage.setItem('bd', JSON.stringify(data)); } catch(e) {}
+            names();
+            draw();
+        })
+        .catch(function(e) {
+            console.error(e);
+            toast('Load failed', 'err');
+        });
 }
 
-function render() {
-    if (!DATA) return;
-    
-    const { categories, transactions, stats, users } = DATA;
-    const u1 = users.user1, u2 = users.user2;
-    
-    // Get current view stats
-    const viewStats = VIEW === 'household' ? stats.household : stats[VIEW];
-    
-    // Update individual stats
-    $('balance').textContent = `$${viewStats.balance.toFixed(2)}`;
-    $('income').textContent = `+$${viewStats.income.toFixed(2)}`;
-    $('expenses').textContent = `$${viewStats.expenses.toFixed(2)}`;
-    
-    // Percentage labels
-    const pctClass = VIEW === 'user1' ? 'u1' : 'u2';
-    $('incomePct').className = `pct ${pctClass}`;
-    $('expensePct').className = `pct ${pctClass}`;
-    
-    if (VIEW === 'user1') {
-        $('incomePct').textContent = `${stats.user1.incomePercent}%`;
-        $('expensePct').textContent = `${stats.user1.expensePercent}%`;
-    } else if (VIEW === 'user2') {
-        $('incomePct').textContent = `${stats.user2.incomePercent}%`;
-        $('expensePct').textContent = `${stats.user2.expensePercent}%`;
+function draw() {
+    if (!D) return;
+    var s = D.s, u = D.u;
+    var vs = V === 'household' ? s.h : s[V === 'user1' ? 'u1' : 'u2'];
+
+    // Balance card (individual)
+    $('bal').textContent = '$' + vs.bl.toFixed(2);
+    $('inc').textContent = '+$' + vs.i.toFixed(2);
+    $('exp').textContent = '-$' + vs.e.toFixed(2);
+
+    if (V === 'user1') {
+        $('incP').textContent = s.u1.ip + '% of household';
+        $('expP').textContent = s.u1.ep + '% of household';
+    } else if (V === 'user2') {
+        $('incP').textContent = s.u2.ip + '% of household';
+        $('expP').textContent = s.u2.ep + '% of household';
     }
-    
-    // Update comparison view
-    const i1 = stats.user1.incomePercent || 0;
-    const i2 = stats.user2.incomePercent || 0;
-    const e1 = stats.user1.expensePercent || 0;
-    const e2 = stats.user2.expensePercent || 0;
-    
-    $('incomeBar1').style.width = `${i1 || 50}%`;
-    $('incomeBar1').textContent = `${i1}%`;
-    $('incomeBar2').style.width = `${i2 || 50}%`;
-    $('incomeBar2').textContent = `${i2}%`;
-    $('incomeVal1').textContent = `${u1}: $${stats.user1.income.toFixed(0)}`;
-    $('incomeVal2').textContent = `${u2}: $${stats.user2.income.toFixed(0)}`;
-    
-    $('expenseBar1').style.width = `${e1 || 50}%`;
-    $('expenseBar1').textContent = `${e1}%`;
-    $('expenseBar2').style.width = `${e2 || 50}%`;
-    $('expenseBar2').textContent = `${e2}%`;
-    $('expenseVal1').textContent = `${u1}: $${stats.user1.expenses.toFixed(0)}`;
-    $('expenseVal2').textContent = `${u2}: $${stats.user2.expenses.toFixed(0)}`;
-    
-    $('totalIncome').textContent = `$${stats.household.income.toFixed(2)}`;
-    $('totalExpenses').textContent = `$${stats.household.expenses.toFixed(2)}`;
-    $('totalBalance').textContent = `$${stats.household.balance.toFixed(2)}`;
-    $('totalBalance').style.color = stats.household.balance >= 0 ? 'var(--green)' : 'var(--red)';
-    
-    // Category dropdown
-    $('txCat').innerHTML = '<option value="">Category</option>' + 
-        categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-    
+
+    // Comparison bars
+    var i1 = s.u1.ip || 0, i2 = s.u2.ip || 0;
+    var e1 = s.u1.ep || 0, e2 = s.u2.ep || 0;
+
+    $('ib1').style.width = (i1 || 50) + '%'; $('ib1').textContent = i1 + '%';
+    $('ib2').style.width = (i2 || 50) + '%'; $('ib2').textContent = i2 + '%';
+    $('iv1').textContent = u.user1 + ': $' + s.u1.i.toFixed(0);
+    $('iv2').textContent = u.user2 + ': $' + s.u2.i.toFixed(0);
+
+    $('eb1').style.width = (e1 || 50) + '%'; $('eb1').textContent = e1 + '%';
+    $('eb2').style.width = (e2 || 50) + '%'; $('eb2').textContent = e2 + '%';
+    $('ev1').textContent = u.user1 + ': $' + s.u1.e.toFixed(0);
+    $('ev2').textContent = u.user2 + ': $' + s.u2.e.toFixed(0);
+
+    $('hi').textContent = '$' + s.h.i.toFixed(2);
+    $('he').textContent = '$' + s.h.e.toFixed(2);
+    $('hb').textContent = '$' + s.h.bl.toFixed(2);
+    $('hb').style.color = s.h.bl >= 0 ? 'var(--gn)' : 'var(--rd)';
+
+    // Categories dropdown
+    $('fCat').innerHTML = '<option value="">Category</option>' +
+        D.cats.map(function(c) { return '<option value="' + c.n + '">' + c.n + '</option>'; }).join('');
+
     // Budgets
-    const spending = viewStats.categorySpending;
-    const budgetHtml = Object.entries(spending).map(([cat, d]) => {
-        const pct = d.budget > 0 ? Math.min((d.spent / d.budget) * 100, 100) : 0;
-        const cls = pct > 90 ? 'over' : pct > 75 ? 'warn' : '';
-        return `
-            <div class="budget-item">
-                <div class="budget-head">
-                    <span>${cat}</span>
-                    <span>$${d.spent.toFixed(0)} / $${d.budget}</span>
-                </div>
-                <div class="budget-bar">
-                    <div class="budget-fill ${cls}" style="width:${pct}%"></div>
-                </div>
-            </div>`;
-    }).join('');
-    $('budgets').innerHTML = budgetHtml || '<div class="empty">No budgets</div>';
-    
+    var cs = vs.cs;
+    var bh = '';
+    for (var cat in cs) {
+        var d = cs[cat];
+        var p = d.b > 0 ? Math.min(d.s / d.b * 100, 100) : 0;
+        var cl = p > 90 ? ' o' : p > 75 ? ' w' : '';
+        bh += '<div class="bi"><div class="bh"><span>' + cat + '</span><span>$' + d.s.toFixed(0) + '/$' + d.b + '</span></div><div class="bb"><div class="bf' + cl + '" style="width:' + p + '%"></div></div></div>';
+    }
+    $('bud').innerHTML = bh || '<div class="empty">No budgets</div>';
+
     // Transactions
-    const month = parseInt(monthEl.value), year = parseInt(yearEl.value);
-    let filtered = transactions.filter(t => {
-        const d = new Date(t.Date);
+    var month = parseInt($('mo').value);
+    var year = new Date().getFullYear();
+    var filtered = D.tx.filter(function(t) {
+        var d = new Date(t.d);
         return d.getMonth() + 1 === month && d.getFullYear() === year;
     });
-    
-    // Filter by user if not household view
-    if (VIEW !== 'household') {
-        const viewUser = VIEW === 'user1' ? u1 : u2;
-        filtered = filtered.filter(t => t.User === viewUser);
+
+    if (V !== 'household') {
+        var vu = V === 'user1' ? u.user1 : u.user2;
+        filtered = filtered.filter(function(t) { return t.u === vu; });
     }
-    
-    if (filtered.length === 0) {
-        $('transactions').innerHTML = '<div class="empty">No transactions this month</div>';
+
+    if (!filtered.length) {
+        $('txs').innerHTML = '<div class="empty">No transactions</div>';
     } else {
-        $('transactions').innerHTML = filtered.slice(0, 20).map(t => {
-            const d = new Date(t.Date);
-            const isInc = t.Type === 'Income';
-            const isU1 = t.User === u1;
-            const initials = t.User ? t.User.substring(0, 2).toUpperCase() : 'ME';
-            
-            return `
-                <div class="trans-item">
-                    <div class="trans-left">
-                        <div class="trans-avatar ${isU1 ? 'u1' : 'u2'}">${initials}</div>
-                        <div class="trans-info">
-                            <div class="trans-desc">${t.Description}</div>
-                            <div class="trans-meta">
-                                ${d.toLocaleDateString('en', {month: 'short', day: 'numeric'})}
-                                <span class="trans-cat">${t.Category}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="trans-right">
-                        <span class="trans-amt ${isInc ? 'income' : 'expense'}">${isInc ? '+' : '-'}$${Math.abs(t.Amount).toFixed(2)}</span>
-                        <button class="del-btn" onclick="deleteTx(${t.row})">×</button>
-                    </div>
-                </div>`;
-        }).join('');
+        var h = '';
+        var limit = Math.min(filtered.length, 20);
+        for (var i = 0; i < limit; i++) {
+            var t = filtered[i];
+            var dd = new Date(t.d);
+            var isI = t.t === 'Income';
+            var isU1 = t.u === u.user1;
+            var ini = t.u ? t.u.substring(0, 2).toUpperCase() : 'ME';
+            h += '<div class="ti"><div class="av ' + (isU1 ? 'a1' : 'a2') + '">' + ini + '</div><div class="tl"><div class="td">' + t.ds + '</div><div class="tm">' + dd.toLocaleDateString('en', {month:'short',day:'numeric'}) + ' <span class="tc">' + t.c + '</span></div></div><div class="tr"><span class="ta ' + (isI ? 'green' : '') + '">' + (isI ? '+' : '-') + '$' + Math.abs(t.a).toFixed(2) + '</span><button class="db" onclick="del(' + t.r + ')">×</button></div></div>';
+        }
+        $('txs').innerHTML = h;
     }
-    
+
     // Charts
-    renderCharts(viewStats);
-    
+    charts(vs);
+
     // Settings categories
-    $('catList').innerHTML = categories.map(c => `
-        <div class="cat-item">
-            <span>${c.name}</span>
-            <input type="number" class="cat-input" value="${c.budget}" 
-                   onchange="updateBudget('${c.name}', this.value)">
-        </div>`).join('');
+    $('catL').innerHTML = D.cats.map(function(c) {
+        return '<div class="ci"><span>' + c.n + '</span><input type="number" value="' + c.b + '" onchange="ubud(\'' + c.n + '\',this.value)"></div>';
+    }).join('');
 }
 
-function renderCharts(stats) {
-    const catData = Object.entries(stats.categorySpending).filter(([_, d]) => d.spent > 0);
-    const dayData = Object.entries(stats.dailySpending).sort((a, b) => a[0] - b[0]);
-    
-    // Determine chart colors based on view
-    let colors = ['#000', '#333', '#555', '#777', '#999', '#bbb', '#ddd'];
-    if (VIEW === 'user1') colors = ['#4a90d9', '#6ba3e0', '#8cb6e7', '#adc9ee', '#cedcf5'];
-    if (VIEW === 'user2') colors = ['#9b59b6', '#af7ac5', '#c39bd3', '#d7bde2', '#ebdef0'];
-    
+function charts(vs) {
+    var cd = [], dd = [];
+    for (var k in vs.cs) { if (vs.cs[k].s > 0) cd.push([k, vs.cs[k].s]); }
+    for (var k in vs.ds) { dd.push([parseInt(k), vs.ds[k]]); }
+    dd.sort(function(a, b) { return a[0] - b[0]; });
+
+    var colors = V === 'user1' ? ['#4a90d9','#6ba3e0','#8cb6e7','#adc9ee','#cedcf5','#3a7bc8','#2a6cb7']
+               : V === 'user2' ? ['#9b59b6','#af7ac5','#c39bd3','#d7bde2','#ebdef0','#8e44ad','#7d3c98']
+               : ['#000','#333','#555','#777','#999','#bbb','#ddd'];
+
+    var lc = V === 'user1' ? '#4a90d9' : V === 'user2' ? '#9b59b6' : '#000';
+
     // Category chart
-    const ctx1 = $('catChart').getContext('2d');
-    if (catChart) catChart.destroy();
-    
-    if (catData.length > 0) {
-        catChart = new Chart(ctx1, {
+    var c1 = $('cC');
+    if (cC) cC.destroy();
+    if (cd.length) {
+        cC = new Chart(c1, {
             type: 'doughnut',
             data: {
-                labels: catData.map(([c]) => c),
-                datasets: [{
-                    data: catData.map(([_, d]) => d.spent),
-                    backgroundColor: colors,
-                    borderWidth: 0
-                }]
+                labels: cd.map(function(x) { return x[0]; }),
+                datasets: [{ data: cd.map(function(x) { return x[1]; }), backgroundColor: colors, borderWidth: 0 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
-            }
+            options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10 }, padding: 8 } } } }
         });
     } else {
-        ctx1.canvas.parentElement.innerHTML = '<div class="empty">No data</div>';
+        c1.parentElement.innerHTML = '<div class="empty">No data</div>';
     }
-    
+
     // Daily chart
-    const ctx2 = $('dayChart').getContext('2d');
-    if (dayChart) dayChart.destroy();
-    
-    const lineColor = VIEW === 'user1' ? '#4a90d9' : VIEW === 'user2' ? '#9b59b6' : '#000';
-    
-    if (dayData.length > 0) {
-        dayChart = new Chart(ctx2, {
+    var c2 = $('dC');
+    if (dC) dC.destroy();
+    if (dd.length) {
+        dC = new Chart(c2, {
             type: 'line',
             data: {
-                labels: dayData.map(([d]) => d),
-                datasets: [{
-                    data: dayData.map(([_, v]) => v),
-                    borderColor: lineColor,
-                    backgroundColor: lineColor + '15',
-                    tension: 0.3,
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    fill: true
-                }]
+                labels: dd.map(function(x) { return x[0]; }),
+                datasets: [{ data: dd.map(function(x) { return x[1]; }), borderColor: lc, backgroundColor: lc + '10', tension: 0.3, borderWidth: 1.5, pointRadius: 2, fill: true }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, ticks: { callback: v => '$' + v }, grid: { color: '#eee' } },
-                    x: { grid: { display: false } }
+                    y: { beginAtZero: true, ticks: { callback: function(v) { return '$' + v; }, font: { size: 10 } }, grid: { color: '#eee' } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
                 }
             }
         });
     } else {
-        ctx2.canvas.parentElement.innerHTML = '<div class="empty">No data</div>';
+        c2.parentElement.innerHTML = '<div class="empty">No data</div>';
     }
 }
 
-async function addTransaction(e) {
+function addTx(e) {
     e.preventDefault();
-    if (!API) return toast('Configure API URL first', 'err');
-    
-    const userName = FORM_USER === 'user1' ? DATA.users.user1 : DATA.users.user2;
-    
-    const data = {
-        date: $('txDate').value,
-        category: $('txCat').value,
-        description: $('txDesc').value,
-        amount: $('txAmt').value,
-        type: $('txType').value,
-        user: userName
+    if (!API) return toast('Set API URL', 'err');
+
+    var user = FU === 'user1' ? D.u.user1 : D.u.user2;
+    var data = {
+        date: $('fDate').value,
+        cat: $('fCat').value,
+        desc: $('fDesc').value,
+        amt: $('fAmt').value,
+        type: $('fType').value,
+        user: user
     };
-    
-    hideForm();
-    toast('Saving...', '');
-    
-    try {
-        await fetch(`${API}?action=addTransaction&data=${encodeURIComponent(JSON.stringify(data))}`);
-        toast('Added!', 'ok');
-        loadData();
-    } catch (e) {
-        toast('Failed to add', 'err');
-    }
+
+    hf();
+    toast('Saving...');
+
+    fetch(API + '?action=add&d=' + encodeURIComponent(JSON.stringify(data)))
+        .then(function() { toast('Added!', 'ok'); load(); })
+        .catch(function() { toast('Failed', 'err'); });
 }
 
-async function deleteTx(row) {
+function del(row) {
     if (!confirm('Delete?')) return;
-    
-    try {
-        await fetch(`${API}?action=deleteTransaction&row=${row}`);
-        toast('Deleted', 'ok');
-        loadData();
-    } catch (e) {
-        toast('Failed', 'err');
-    }
+    fetch(API + '?action=del&r=' + row)
+        .then(function() { toast('Deleted', 'ok'); load(); })
+        .catch(function() { toast('Failed', 'err'); });
 }
 
-async function updateBudget(cat, budget) {
-    try {
-        await fetch(`${API}?action=updateBudget&data=${encodeURIComponent(JSON.stringify({ category: cat, budget: parseFloat(budget) }))}`);
-        toast('Updated', 'ok');
-        loadData();
-    } catch (e) {
-        toast('Failed', 'err');
-    }
+function ubud(cat, b) {
+    fetch(API + '?action=budget&d=' + encodeURIComponent(JSON.stringify({cat: cat, b: parseFloat(b)})))
+        .then(function() { toast('Updated', 'ok'); load(); })
+        .catch(function() { toast('Failed', 'err'); });
 }
 
-function showModal() {
+function sm() {
     $('modal').classList.add('show');
-    $('apiUrl').value = API;
-    if (DATA && DATA.users) {
-        $('userName1').value = DATA.users.user1 || '';
-        $('userName2').value = DATA.users.user2 || '';
-    }
+    $('apiI').value = API;
+    if (D && D.u) { $('n1').value = D.u.user1 || ''; $('n2').value = D.u.user2 || ''; }
 }
 
-function hideModal() {
-    $('modal').classList.remove('show');
-}
+function hm() { $('modal').classList.remove('show'); }
 
-async function saveSettings() {
-    const url = $('apiUrl').value.trim();
-    if (!url) return toast('Enter API URL', 'err');
-    
-    API = url;
-    localStorage.setItem('budgetApi', url);
-    
-    // Save user names
-    const user1 = $('userName1').value.trim() || 'Me';
-    const user2 = $('userName2').value.trim() || 'Partner';
-    
-    try {
-        await fetch(`${API}?action=saveUsers&data=${encodeURIComponent(JSON.stringify({ user1, user2 }))}`);
-        
-        // Update local data
-        if (DATA) {
-            DATA.users = { user1, user2 };
-            localStorage.setItem('budgetData', JSON.stringify(DATA));
-        }
-        
-        updateUserNames();
-        hideModal();
-        loadData();
-        toast('Saved!', 'ok');
-    } catch (e) {
-        toast('Failed to save', 'err');
+function ss() {
+    var url = $('apiI').value.trim();
+    if (url) { API = url; localStorage.setItem('budgetApi', url); }
+
+    var u1 = $('n1').value.trim() || 'Me';
+    var u2 = $('n2').value.trim() || 'Partner';
+
+    if (API) {
+        fetch(API + '?action=users&d=' + encodeURIComponent(JSON.stringify({user1: u1, user2: u2})))
+            .then(function() {
+                if (D) { D.u = {user1: u1, user2: u2}; try { localStorage.setItem('bd', JSON.stringify(D)); } catch(e) {} }
+                names();
+                hm();
+                load();
+                toast('Saved!', 'ok');
+            })
+            .catch(function() { toast('Failed', 'err'); });
+    } else {
+        toast('Enter API URL', 'err');
     }
 }
 
 function toast(msg, type) {
-    const old = document.querySelector('.toast');
+    var old = document.querySelector('.toast');
     if (old) old.remove();
-    
-    const t = document.createElement('div');
-    t.className = `toast ${type}`;
+    var t = document.createElement('div');
+    t.className = 'toast' + (type ? ' ' + type : '');
     t.textContent = msg;
     document.body.appendChild(t);
-    
-    setTimeout(() => t.remove(), 2500);
+    setTimeout(function() { if (t.parentNode) t.remove(); }, 2000);
 }
