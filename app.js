@@ -1,17 +1,16 @@
-var API = window.BUDGET_API || '';
-var D = null; // data
+// Get API from: config.js (GitHub Actions) → localStorage → empty
+var API = window.BUDGET_API || localStorage.getItem('budgetApi') || '';
+var D = null;
 var V = localStorage.getItem('bv') || 'household';
 var FU = 'user1';
 var cC = null, dC = null;
 var $ = function(id) { return document.getElementById(id); };
 
-// Disable Chart.js animations globally for performance
 Chart.defaults.animation = false;
 Chart.defaults.responsive = true;
 Chart.defaults.maintainAspectRatio = false;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Month selector - current year only
     var now = new Date();
     var ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     $('mo').innerHTML = ms.map(function(m, i) {
@@ -20,11 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
     $('mo').value = now.getMonth() + 1;
     $('fDate').valueAsDate = now;
 
-    // Try load cached data instantly
     try { D = JSON.parse(localStorage.getItem('bd')); } catch(e) {}
     if (D) { names(); draw(); }
 
-    // Events
     $('t1').onclick = function() { sv('user1'); };
     $('t2').onclick = function() { sv('user2'); };
     $('t3').onclick = function() { sv('household'); };
@@ -41,8 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     sv(V);
 
-    if (!API) { sm(); toast('Set API URL', 'err'); }
-    else load();
+    // Only show settings if NO API from any source
+    if (!API) {
+        sm();
+        toast('Set API URL in settings', 'err');
+    } else {
+        load();
+    }
 });
 
 function sv(v) {
@@ -117,7 +119,6 @@ function draw() {
     var s = D.s, u = D.u;
     var vs = V === 'household' ? s.h : s[V === 'user1' ? 'u1' : 'u2'];
 
-    // Balance card (individual)
     $('bal').textContent = '$' + vs.bl.toFixed(2);
     $('inc').textContent = '+$' + vs.i.toFixed(2);
     $('exp').textContent = '-$' + vs.e.toFixed(2);
@@ -130,7 +131,6 @@ function draw() {
         $('expP').textContent = s.u2.ep + '% of household';
     }
 
-    // Comparison bars
     var i1 = s.u1.ip || 0, i2 = s.u2.ip || 0;
     var e1 = s.u1.ep || 0, e2 = s.u2.ep || 0;
 
@@ -149,11 +149,9 @@ function draw() {
     $('hb').textContent = '$' + s.h.bl.toFixed(2);
     $('hb').style.color = s.h.bl >= 0 ? 'var(--gn)' : 'var(--rd)';
 
-    // Categories dropdown
     $('fCat').innerHTML = '<option value="">Category</option>' +
         D.cats.map(function(c) { return '<option value="' + c.n + '">' + c.n + '</option>'; }).join('');
 
-    // Budgets
     var cs = vs.cs;
     var bh = '';
     for (var cat in cs) {
@@ -164,7 +162,6 @@ function draw() {
     }
     $('bud').innerHTML = bh || '<div class="empty">No budgets</div>';
 
-    // Transactions
     var month = parseInt($('mo').value);
     var year = new Date().getFullYear();
     var filtered = D.tx.filter(function(t) {
@@ -193,10 +190,8 @@ function draw() {
         $('txs').innerHTML = h;
     }
 
-    // Charts
     charts(vs);
 
-    // Settings categories
     $('catL').innerHTML = D.cats.map(function(c) {
         return '<div class="ci"><span>' + c.n + '</span><input type="number" value="' + c.b + '" onchange="ubud(\'' + c.n + '\',this.value)"></div>';
     }).join('');
@@ -214,7 +209,6 @@ function charts(vs) {
 
     var lc = V === 'user1' ? '#4a90d9' : V === 'user2' ? '#9b59b6' : '#000';
 
-    // Category chart
     var c1 = $('cC');
     if (cC) cC.destroy();
     if (cd.length) {
@@ -230,7 +224,6 @@ function charts(vs) {
         c1.parentElement.innerHTML = '<div class="empty">No data</div>';
     }
 
-    // Daily chart
     var c2 = $('dC');
     if (dC) dC.destroy();
     if (dd.length) {
@@ -298,7 +291,10 @@ function hm() { $('modal').classList.remove('show'); }
 
 function ss() {
     var url = $('apiI').value.trim();
-    if (url) { API = url; localStorage.setItem('budgetApi', url); }
+    if (url) {
+        API = url;
+        localStorage.setItem('budgetApi', url);
+    }
 
     var u1 = $('n1').value.trim() || 'Me';
     var u2 = $('n2').value.trim() || 'Partner';
