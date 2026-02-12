@@ -3,189 +3,201 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Budget</title>
+<title>BUDGET</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
     --bg:#EAEFEF;
     --c:#fff;
-    --c2:#F5F7F7;
     --t:#25343F;
     --t2:#4A5D6B;
     --t3:#7A8E9A;
-    --br:#BFC9D1;
+    --br:#25343F;
     --accent:#FF9B51;
-    --accent2:#E8863F;
     --bl:#4A90D9;
     --pu:#9B6FB0;
-    --gn:#3DAA8C;
-    --rd:#D94F4F;
-    --dark:#25343F;
+    --gn:#2D8A6E;
+    --rd:#C43E3E;
     --mid:#BFC9D1;
 }
-body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--t);font-size:14px;overscroll-behavior:none}
+body{font-family:'Space Mono',monospace;background:var(--bg);color:var(--t);font-size:13px;overscroll-behavior:none}
 button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 
-/* Nav */
-.n{background:var(--dark);border-bottom:none;padding:12px;position:sticky;top:0;z-index:50}
-.ni{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:8px;justify-content:space-between}
-.logo{font-weight:700;font-size:15px;white-space:nowrap;color:#fff}
-.logo span{color:var(--accent)}
-.tabs{display:flex;gap:4px;flex:1;justify-content:center}
-.tab{padding:6px 14px;border:1px solid rgba(255,255,255,.15);background:transparent;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;color:rgba(255,255,255,.6);transition:all .2s}
-.tab:hover{border-color:rgba(255,255,255,.3);color:#fff}
-.tab.on{color:#fff;border-color:transparent}
-.tab[data-v=user1].on{background:var(--bl)}
-.tab[data-v=user2].on{background:var(--pu)}
-.tab[data-v=household].on{background:var(--accent)}
-.nr{display:flex;gap:6px;align-items:center}
-.sel{padding:5px 8px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:rgba(255,255,255,.08);font-size:12px;font-weight:500;color:#fff}
+/* NAV */
+.n{background:var(--t);padding:0;position:sticky;top:0;z-index:50;border-bottom:4px solid var(--accent)}
+.ni{max-width:700px;margin:0 auto;display:flex;align-items:stretch;justify-content:space-between}
+.logo{font-weight:700;font-size:18px;color:var(--accent);padding:14px 16px;text-transform:uppercase;letter-spacing:.15em;border-right:2px solid rgba(255,255,255,.1)}
+.tabs{display:flex;flex:1}
+.tab{padding:14px 16px;background:transparent;border:none;border-right:2px solid rgba(255,255,255,.1);cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);transition:all .1s;flex:1;text-align:center}
+.tab:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.7)}
+.tab.on{color:var(--t);border-bottom:none}
+.tab[data-v=user1].on{background:var(--bl);color:#fff}
+.tab[data-v=user2].on{background:var(--pu);color:#fff}
+.tab[data-v=household].on{background:var(--accent);color:var(--t)}
+.nr{display:flex;align-items:stretch}
+.sel{padding:0 12px;border:none;border-left:2px solid rgba(255,255,255,.1);background:transparent;font-size:11px;font-weight:700;color:#fff;cursor:pointer;text-transform:uppercase;letter-spacing:.05em}
 .sel option{color:var(--t);background:var(--c)}
-.ib{width:32px;height:32px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:rgba(255,255,255,.08);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;transition:all .2s}
-.ib:hover{background:rgba(255,255,255,.15)}
+.ib{width:48px;border:none;border-left:2px solid rgba(255,255,255,.1);background:transparent;cursor:pointer;font-size:16px;color:#fff;transition:all .1s}
+.ib:hover{background:var(--accent);color:var(--t)}
 
-/* Main */
-.m{max-width:600px;margin:0 auto;padding:12px}
+/* MAIN */
+.m{max-width:700px;margin:0 auto;padding:16px}
 
-/* Balance Card */
-.bal{background:var(--c);border-radius:16px;padding:24px 20px;text-align:center;margin-bottom:12px;box-shadow:0 2px 8px rgba(37,52,63,.06)}
-.bal-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
-.bal-v{font-size:34px;font-weight:700;margin:6px 0 16px;color:var(--t)}
-.bal-r{display:flex;justify-content:center;gap:32px}
-.bal-i{text-align:center}
-.bal-i .l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
-.bal-i .v{font-size:17px;font-weight:600;margin-top:3px}
+/* BALANCE */
+.bal{background:var(--c);border:3px solid var(--t);padding:0;margin-bottom:16px;position:relative}
+.bal::before{content:'BALANCE';position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em;text-transform:uppercase}
+.bal-v{font-size:48px;font-weight:700;padding:40px 20px 16px;border-bottom:3px solid var(--t);letter-spacing:-.02em}
+.bal-r{display:flex}
+.bal-i{flex:1;padding:14px 20px;text-align:left}
+.bal-i:first-child{border-right:3px solid var(--t)}
+.bal-i .l{font-size:9px;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:var(--t3);margin-bottom:4px;display:block}
+.bal-i .v{font-size:20px;font-weight:700}
 .green{color:var(--gn)}.red{color:var(--rd)}
-.bal-p{font-size:11px;color:var(--t3);margin-top:3px}
+.bal-p{font-size:10px;color:var(--t3);margin-top:4px;font-weight:400}
 
-/* Comparison */
-.cmp{background:var(--c);border-radius:16px;padding:20px;margin-bottom:12px;display:none;box-shadow:0 2px 8px rgba(37,52,63,.06)}
+/* COMPARISON */
+.cmp{background:var(--c);border:3px solid var(--t);margin-bottom:16px;display:none;position:relative}
 .cmp.show{display:block}
-.cmp-t{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:14px}
-.cmp-row{margin-bottom:14px}
+.cmp::before{content:'HOUSEHOLD';position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em}
+.cmp-inner{padding:36px 16px 16px}
+.cmp-row{margin-bottom:16px}
 .cmp-row:last-of-type{margin-bottom:0}
-.cmp-rl{font-size:11px;color:var(--t2);margin-bottom:5px;font-weight:500}
-.bar-wrap{height:26px;background:var(--bg);border-radius:6px;overflow:hidden;display:flex}
-.bar-f{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;min-width:32px;transition:width .4s ease}
+.cmp-rl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--t);margin-bottom:6px}
+.bar-wrap{height:32px;background:var(--bg);border:2px solid var(--t);display:flex;overflow:hidden}
+.bar-f{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;min-width:32px;transition:width .3s}
 .bar-f.b1{background:var(--bl)}.bar-f.b2{background:var(--pu)}
-.cmp-vals{display:flex;justify-content:space-between;font-size:11px;margin-top:5px;font-weight:500}
+.cmp-vals{display:flex;justify-content:space-between;font-size:10px;margin-top:6px;font-weight:700}
 .cmp-vals span:first-child{color:var(--bl)}
 .cmp-vals span:last-child{color:var(--pu)}
-.cmp-totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px;text-align:center;padding-top:16px;border-top:1px solid var(--bg)}
+.cmp-totals{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:3px solid var(--t);margin-top:16px}
+.cmp-totals>div{padding:14px 12px;text-align:left}
+.cmp-totals>div:not(:last-child){border-right:3px solid var(--t)}
+.cmp-totals .lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)}
 .cmp-totals .v{font-size:18px;font-weight:700;margin-top:4px}
 
-/* Add Button */
-.add{display:flex;justify-content:center;margin-bottom:12px}
-.add-b{padding:10px 24px;border:none;border-radius:50px;cursor:pointer;font-weight:600;font-size:13px;color:#fff;background:var(--accent);box-shadow:0 4px 12px rgba(255,155,81,.3);transition:all .2s}
-.add-b:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 6px 16px rgba(255,155,81,.35)}
-.add-b:active{transform:translateY(0)}
-.add-b.u1{background:var(--bl);box-shadow:0 4px 12px rgba(74,144,217,.3)}
-.add-b.u2{background:var(--pu);box-shadow:0 4px 12px rgba(155,111,176,.3)}
+/* ADD BUTTON */
+.add{margin-bottom:16px}
+.add-b{width:100%;padding:14px;border:3px solid var(--t);background:var(--accent);cursor:pointer;font-weight:700;font-size:14px;color:var(--t);text-transform:uppercase;letter-spacing:.15em;transition:all .1s;text-align:center}
+.add-b:hover{background:var(--t);color:var(--accent);border-color:var(--accent)}
+.add-b:active{transform:translate(2px,2px)}
+.add-b.u1{background:var(--bl);color:#fff;border-color:var(--t)}
+.add-b.u1:hover{background:var(--t);color:var(--bl);border-color:var(--bl)}
+.add-b.u2{background:var(--pu);color:#fff;border-color:var(--t)}
+.add-b.u2:hover{background:var(--t);color:var(--pu);border-color:var(--pu)}
 
-/* Form */
-.fm{background:var(--c);border-radius:16px;padding:14px;margin-bottom:12px;display:none;box-shadow:0 2px 8px rgba(37,52,63,.06)}
+/* FORM */
+.fm{background:var(--c);border:3px solid var(--t);margin-bottom:16px;display:none}
 .fm.show{display:block}
-.fm-u{display:flex;gap:6px;margin-bottom:10px}
-.fm-ub{flex:1;padding:9px;border:1.5px solid var(--br);background:var(--c);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;text-align:center;transition:all .2s;color:var(--t2)}
-.fm-ub:hover{border-color:var(--t3)}
-.fm-ub.on{color:#fff;border-color:transparent}
+.fm-u{display:flex;border-bottom:3px solid var(--t)}
+.fm-ub{flex:1;padding:12px;border:none;background:var(--c);cursor:pointer;font-size:11px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);transition:all .1s}
+.fm-ub:first-child{border-right:3px solid var(--t)}
+.fm-ub.on{color:#fff}
 .fm-ub.u1.on{background:var(--bl)}
 .fm-ub.u2.on{background:var(--pu)}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.fi{padding:9px 10px;border:1.5px solid var(--br);border-radius:8px;width:100%;font-size:13px;background:var(--c);color:var(--t);transition:border-color .2s}
-.fi:focus{outline:none;border-color:var(--accent)}
-.fi::placeholder{color:var(--t3)}
-.fa{grid-column:span 2;display:flex;gap:6px;justify-content:flex-end}
-.btn{padding:9px 18px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:all .2s}
-.bp{background:var(--accent);color:#fff}
-.bp:hover{background:var(--accent2)}
-.bs{background:var(--bg);color:var(--t2);border:1px solid var(--br)}
-.bs:hover{background:var(--mid)}
+.fg{display:grid;grid-template-columns:1fr 1fr;padding:0}
+.fi{padding:12px;border:none;border-bottom:2px solid var(--t);border-right:2px solid var(--t);width:100%;font-size:12px;background:var(--c);color:var(--t)}
+.fi:focus{outline:none;background:var(--bg)}
+.fi::placeholder{color:var(--mid)}
+.fi:last-of-type{border-right:none}
+.fa{grid-column:span 2;display:flex;border-top:1px solid var(--t)}
+.btn{padding:12px 20px;border:none;cursor:pointer;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.1em;transition:all .1s}
+.bp{background:var(--accent);color:var(--t);flex:2}
+.bp:hover{background:var(--t);color:var(--accent)}
+.bs{background:var(--c);color:var(--t3);flex:1;border-right:3px solid var(--t)}
+.bs:hover{background:var(--bg)}
 
-/* Section */
-.sec{background:var(--c);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(37,52,63,.06)}
-.st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:10px}
-.ch{height:170px;position:relative}
+/* SECTION */
+.sec{background:var(--c);border:3px solid var(--t);margin-bottom:16px;position:relative}
+.st{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;background:var(--t);color:var(--accent);padding:6px 12px;display:inline-block;position:absolute;top:-1px;left:-1px}
+.ch{height:180px;position:relative;padding:36px 12px 12px}
 
-/* Budgets */
-.bi{padding:10px;background:var(--c2);border-radius:8px;margin-bottom:6px}
+/* CHARTS */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+
+/* BUDGETS */
+.bud-inner{padding:36px 12px 12px}
+.bi{padding:10px;border:2px solid var(--t);margin-bottom:8px;background:var(--c)}
 .bi:last-child{margin-bottom:0}
-.bh{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;font-weight:500}
-.bh span:last-child{color:var(--t3)}
-.bb{height:4px;background:var(--bg);border-radius:3px;overflow:hidden}
-.bf{height:100%;border-radius:3px;background:var(--accent);transition:width .4s ease}
-.bf.w{background:#E6A23C}
+.bh{display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;font-weight:700}
+.bh span:last-child{color:var(--t3);font-weight:400}
+.bb{height:6px;background:var(--bg);border:1px solid var(--t);overflow:hidden}
+.bf{height:100%;background:var(--accent);transition:width .3s}
+.bf.w{background:#D4A03C}
 .bf.o{background:var(--rd)}
 
-/* Transactions */
-.ti{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bg)}
+/* TRANSACTIONS */
+.txs-inner{padding:36px 0 0}
+.ti{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:2px solid var(--t)}
 .ti:last-child{border-bottom:none}
-.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.ti:hover{background:var(--bg)}
+.av{width:32px;height:32px;border:2px solid var(--t);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
 .av.a1{background:var(--bl)}.av.a2{background:var(--pu)}
 .tl{flex:1;min-width:0}
-.td{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t)}
-.tm{font-size:11px;color:var(--t3);display:flex;gap:6px;align-items:center;margin-top:2px}
-.tc{background:var(--c2);padding:1px 6px;border-radius:4px;font-size:10px;text-transform:uppercase;font-weight:500;color:var(--t2)}
+.td{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}
+.tm{font-size:10px;color:var(--t3);display:flex;gap:6px;align-items:center;margin-top:2px}
+.tc{background:var(--t);color:var(--accent);padding:1px 6px;font-size:9px;text-transform:uppercase;font-weight:700;letter-spacing:.05em}
 .tr{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.ta{font-weight:600;font-size:13px;color:var(--t)}
+.ta{font-weight:700;font-size:14px;letter-spacing:-.02em}
 .ta.green{color:var(--gn)}
-.db{background:none;border:none;color:var(--br);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;border-radius:4px;transition:all .15s}
-.db:hover{color:var(--rd);background:rgba(217,79,79,.08)}
-.db:active{color:#fff;background:var(--rd)}
+.db{background:var(--t);border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:2px 6px;line-height:1;font-weight:700;transition:all .1s}
+.db:hover{background:var(--rd);color:#fff}
 
-/* Empty / Loading */
-.empty{text-align:center;color:var(--t3);padding:28px;font-size:13px}
-.spin{width:20px;height:20px;border:2.5px solid var(--bg);border-top-color:var(--accent);border-radius:50%;animation:sp .6s linear infinite;margin:24px auto}
+/* EMPTY / LOADING */
+.empty{text-align:center;color:var(--t3);padding:40px 20px;font-size:12px;text-transform:uppercase;letter-spacing:.1em}
+.spin{width:20px;height:20px;border:3px solid var(--mid);border-top-color:var(--accent);border-radius:0;animation:sp .4s linear infinite;margin:30px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-/* Charts */
-.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-
-/* Modal */
+/* MODAL */
 .mo{display:none;position:fixed;inset:0;z-index:100}
-.mo.show{display:flex;align-items:flex-start;justify-content:center;padding-top:8vh}
-.mo-bg{position:fixed;inset:0;background:rgba(37,52,63,.5);backdrop-filter:blur(4px)}
-.mo-b{position:relative;width:90%;max-width:400px;background:var(--c);border-radius:16px;max-height:80vh;overflow:auto;z-index:1;box-shadow:0 8px 30px rgba(37,52,63,.15)}
-.mo-h{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--bg)}
-.mo-h h2{font-size:16px;font-weight:700;color:var(--t)}
-.mo-x{background:none;border:none;font-size:22px;cursor:pointer;color:var(--t3);padding:0 4px;transition:color .15s}
-.mo-x:hover{color:var(--t)}
+.mo.show{display:flex;align-items:flex-start;justify-content:center;padding-top:5vh}
+.mo-bg{position:fixed;inset:0;background:rgba(37,52,63,.7)}
+.mo-b{position:relative;width:92%;max-width:420px;background:var(--c);border:3px solid var(--t);max-height:85vh;overflow:auto;z-index:1}
+.mo-h{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:3px solid var(--t);background:var(--t)}
+.mo-h h2{font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.15em}
+.mo-x{background:none;border:2px solid var(--accent);font-size:16px;cursor:pointer;color:var(--accent);padding:2px 8px;font-weight:700;transition:all .1s}
+.mo-x:hover{background:var(--accent);color:var(--t)}
 .mo-d{padding:16px}
-.mo-f{padding:16px;border-top:1px solid var(--bg);text-align:right}
-.sg{margin-bottom:16px}
-.sl{font-size:12px;font-weight:600;margin-bottom:5px;display:block;color:var(--t)}
-.si{width:100%;padding:9px 10px;border:1.5px solid var(--br);border-radius:8px;font-size:13px;color:var(--t);transition:border-color .2s}
-.si:focus{outline:none;border-color:var(--accent)}
-.sh{font-size:11px;color:var(--t3);margin-top:4px}
+.mo-f{padding:16px;border-top:3px solid var(--t)}
+.mo-f .bp{width:100%;padding:14px}
+.sg{margin-bottom:18px}
+.sl{font-size:10px;font-weight:700;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.1em}
+.si{width:100%;padding:10px;border:2px solid var(--t);font-size:12px;color:var(--t);background:var(--c)}
+.si:focus{outline:none;background:var(--bg);border-color:var(--accent)}
+.sh{font-size:10px;color:var(--t3);margin-top:4px}
 .sr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.ci{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--c2);border-radius:8px;margin-bottom:5px;font-size:12px;font-weight:500}
-.ci input{width:75px;padding:5px;border:1.5px solid var(--br);border-radius:6px;text-align:right;font-size:12px;transition:border-color .2s}
+.sr .si:first-child{border-left:4px solid var(--bl)}
+.sr .si:last-child{border-left:4px solid var(--pu)}
+.ci{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:2px solid var(--t);margin-bottom:6px;font-size:11px;font-weight:700;text-transform:uppercase}
+.ci input{width:80px;padding:6px;border:2px solid var(--t);font-size:11px;font-weight:700;text-align:right;background:var(--c)}
 .ci input:focus{outline:none;border-color:var(--accent)}
 
-/* Toast */
-.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);padding:10px 20px;background:var(--dark);color:#fff;border-radius:10px;font-size:13px;font-weight:500;z-index:200;white-space:nowrap;box-shadow:0 4px 15px rgba(37,52,63,.2)}
-.toast.ok{background:var(--gn)}
-.toast.err{background:var(--rd)}
+/* TOAST */
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);padding:12px 24px;background:var(--t);color:var(--accent);font-size:12px;font-weight:700;z-index:200;white-space:nowrap;border:3px solid var(--accent);text-transform:uppercase;letter-spacing:.1em}
+.toast.ok{background:var(--gn);color:#fff;border-color:var(--gn)}
+.toast.err{background:var(--rd);color:#fff;border-color:var(--rd)}
 
-/* Scrollbar */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--br);border-radius:2px}
-
-@media(max-width:400px){
+@media(max-width:500px){
     .cg{grid-template-columns:1fr}
     .fg{grid-template-columns:1fr}
+    .fg .fi{border-right:none}
     .fa{grid-column:span 1}
-    .tabs{gap:2px}
-    .tab{padding:5px 8px;font-size:11px}
-    .bal-v{font-size:26px}
-    .bal-r{gap:20px}
+    .tabs{display:none}
+    .ni{gap:0}
+    .bal-v{font-size:36px;padding:36px 16px 12px}
+    .tab-mobile{display:flex;border:3px solid var(--t);border-top:none;margin-bottom:16px}
+    .tab-mobile .tab{border:none;border-right:3px solid var(--t);padding:10px;flex:1}
+    .tab-mobile .tab:last-child{border-right:none}
+}
+@media(min-width:501px){
+    .tab-mobile{display:none!important}
 }
 </style>
 </head>
 <body>
 <nav class="n"><div class="ni">
-  <div class="logo">◐ <span>Budget</span></div>
+  <div class="logo">Budget</div>
   <div class="tabs">
     <button class="tab" data-v="user1" id="t1">Me</button>
     <button class="tab" data-v="user2" id="t2">Partner</button>
@@ -198,35 +210,42 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 </div></nav>
 
 <main class="m">
+  <!-- Mobile tabs -->
+  <div class="tab-mobile">
+    <button class="tab" data-v="user1" id="mt1">Me</button>
+    <button class="tab" data-v="user2" id="mt2">Partner</button>
+    <button class="tab on" data-v="household" id="mt3">Both</button>
+  </div>
+
   <div class="bal" id="balCard">
-    <div class="bal-l">Balance</div>
-    <div class="bal-v" id="bal">$0</div>
+    <div class="bal-v" id="bal">$0.00</div>
     <div class="bal-r">
-      <div class="bal-i"><span class="l">Income</span><span class="v green" id="inc">$0</span><div class="bal-p" id="incP"></div></div>
-      <div class="bal-i"><span class="l">Expenses</span><span class="v" id="exp">$0</span><div class="bal-p" id="expP"></div></div>
+      <div class="bal-i"><span class="l">Income</span><span class="v green" id="inc">+$0</span><div class="bal-p" id="incP"></div></div>
+      <div class="bal-i"><span class="l">Expenses</span><span class="v red" id="exp">-$0</span><div class="bal-p" id="expP"></div></div>
     </div>
   </div>
 
   <div class="cmp" id="cmpView">
-    <div class="cmp-t">Household</div>
-    <div class="cmp-row">
-      <div class="cmp-rl">Income</div>
-      <div class="bar-wrap"><div class="bar-f b1" id="ib1">0%</div><div class="bar-f b2" id="ib2">0%</div></div>
-      <div class="cmp-vals"><span id="iv1">$0</span><span id="iv2">$0</span></div>
-    </div>
-    <div class="cmp-row">
-      <div class="cmp-rl">Expenses</div>
-      <div class="bar-wrap"><div class="bar-f b1" id="eb1">0%</div><div class="bar-f b2" id="eb2">0%</div></div>
-      <div class="cmp-vals"><span id="ev1">$0</span><span id="ev2">$0</span></div>
+    <div class="cmp-inner">
+      <div class="cmp-row">
+        <div class="cmp-rl">Income</div>
+        <div class="bar-wrap"><div class="bar-f b1" id="ib1">0%</div><div class="bar-f b2" id="ib2">0%</div></div>
+        <div class="cmp-vals"><span id="iv1">$0</span><span id="iv2">$0</span></div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-rl">Expenses</div>
+        <div class="bar-wrap"><div class="bar-f b1" id="eb1">0%</div><div class="bar-f b2" id="eb2">0%</div></div>
+        <div class="cmp-vals"><span id="ev1">$0</span><span id="ev2">$0</span></div>
+      </div>
     </div>
     <div class="cmp-totals">
-      <div><div class="bal-l">Income</div><div class="v green" id="hi">$0</div></div>
-      <div><div class="bal-l">Expenses</div><div class="v" id="he">$0</div></div>
-      <div><div class="bal-l">Balance</div><div class="v" id="hb">$0</div></div>
+      <div><div class="lbl">Income</div><div class="v green" id="hi">$0</div></div>
+      <div><div class="lbl">Expenses</div><div class="v red" id="he">$0</div></div>
+      <div><div class="lbl">Balance</div><div class="v" id="hb">$0</div></div>
     </div>
   </div>
 
-  <div class="add"><button class="add-b" id="addBtn">+ Add</button></div>
+  <div class="add"><button class="add-b" id="addBtn">+ ADD TRANSACTION</button></div>
 
   <div class="fm" id="fm">
     <div class="fm-u">
@@ -235,13 +254,13 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
     </div>
     <form id="txF" class="fg">
       <input type="date" id="fDate" class="fi" required>
-      <input type="text" id="fDesc" class="fi" placeholder="Description" required>
-      <select id="fCat" class="fi" required><option value="">Category</option></select>
+      <input type="text" id="fDesc" class="fi" placeholder="DESCRIPTION" required>
+      <select id="fCat" class="fi" required><option value="">CATEGORY</option></select>
       <input type="number" id="fAmt" class="fi" placeholder="0.00" step="0.01" inputmode="decimal" required>
-      <select id="fType" class="fi"><option value="Expense">Expense</option><option value="Income">Income</option></select>
+      <select id="fType" class="fi"><option value="Expense">EXPENSE</option><option value="Income">INCOME</option></select>
       <div class="fa">
-        <button type="button" class="btn bs" id="fCancel">Cancel</button>
-        <button type="submit" class="btn bp" id="fSave">Save</button>
+        <button type="button" class="btn bs" id="fCancel">CANCEL</button>
+        <button type="submit" class="btn bp" id="fSave">SAVE</button>
       </div>
     </form>
   </div>
@@ -251,8 +270,15 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
     <div class="sec"><div class="st">Daily</div><div class="ch"><canvas id="dC"></canvas></div></div>
   </div>
 
-  <div class="sec"><div class="st">Budgets</div><div id="bud"><div class="spin"></div></div></div>
-  <div class="sec"><div class="st">Transactions</div><div id="txs"><div class="spin"></div></div></div>
+  <div class="sec">
+    <div class="st">Budgets</div>
+    <div class="bud-inner" id="bud"><div class="spin"></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="st">Transactions</div>
+    <div class="txs-inner" id="txs"><div class="spin"></div></div>
+  </div>
 </main>
 
 <div class="mo" id="modal">
@@ -260,11 +286,11 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
   <div class="mo-b">
     <div class="mo-h"><h2>Settings</h2><button class="mo-x" id="moX">×</button></div>
     <div class="mo-d">
-      <div class="sg"><label class="sl">Google Script URL</label><input type="text" id="apiI" class="si" placeholder="https://script.google.com/..."><p class="sh">Your deployed Apps Script URL</p></div>
-      <div class="sg"><label class="sl">Names</label><div class="sr"><input type="text" id="n1" class="si" placeholder="You" style="border-left:3px solid var(--bl)"><input type="text" id="n2" class="si" placeholder="Partner" style="border-left:3px solid var(--pu)"></div></div>
-      <div class="sg"><label class="sl">Budgets (per person)</label><div id="catL"></div></div>
+      <div class="sg"><label class="sl">Script URL</label><input type="text" id="apiI" class="si" placeholder="https://script.google.com/..."><p class="sh">Your deployed Apps Script web app URL</p></div>
+      <div class="sg"><label class="sl">Names</label><div class="sr"><input type="text" id="n1" class="si" placeholder="YOU"><input type="text" id="n2" class="si" placeholder="PARTNER"></div></div>
+      <div class="sg"><label class="sl">Budgets</label><div id="catL"></div></div>
     </div>
-    <div class="mo-f"><button class="btn bp" id="savS">Save</button></div>
+    <div class="mo-f"><button class="btn bp" id="savS">SAVE CHANGES</button></div>
   </div>
 </div>
 

@@ -8,10 +8,11 @@ var $ = function(id) { return document.getElementById(id); };
 Chart.defaults.animation = false;
 Chart.defaults.responsive = true;
 Chart.defaults.maintainAspectRatio = false;
+Chart.defaults.font.family = "'Space Mono', monospace";
 
 document.addEventListener('DOMContentLoaded', function() {
     var now = new Date();
-    var ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var ms = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
     $('mo').innerHTML = ms.map(function(m, i) {
         return '<option value="' + (i + 1) + '">' + m + '</option>';
     }).join('');
@@ -21,9 +22,16 @@ document.addEventListener('DOMContentLoaded', function() {
     try { D = JSON.parse(localStorage.getItem('bd')); } catch(e) {}
     if (D) { names(); draw(); }
 
+    // Desktop tabs
     $('t1').onclick = function() { sv('user1'); };
     $('t2').onclick = function() { sv('user2'); };
     $('t3').onclick = function() { sv('household'); };
+
+    // Mobile tabs
+    $('mt1').onclick = function() { sv('user1'); };
+    $('mt2').onclick = function() { sv('user2'); };
+    $('mt3').onclick = function() { sv('household'); };
+
     $('addBtn').onclick = tf;
     $('fCancel').onclick = hf;
     $('fu1').onclick = function() { sfu('user1'); };
@@ -39,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!API) {
         sm();
-        toast('Set API URL in settings', 'err');
+        toast('SET API URL', 'err');
     } else {
         load();
     }
@@ -48,13 +56,17 @@ document.addEventListener('DOMContentLoaded', function() {
 function sv(v) {
     V = v;
     localStorage.setItem('bv', v);
-    $('t1').className = 'tab' + (v === 'user1' ? ' on' : '');
-    $('t2').className = 'tab' + (v === 'user2' ? ' on' : '');
-    $('t3').className = 'tab' + (v === 'household' ? ' on' : '');
-    $('t1').setAttribute('data-v', 'user1');
-    $('t2').setAttribute('data-v', 'user2');
-    $('t3').setAttribute('data-v', 'household');
+
+    // Update all tabs (desktop + mobile)
+    ['t1','t2','t3','mt1','mt2','mt3'].forEach(function(id) {
+        var el = $(id);
+        if (!el) return;
+        var dv = el.getAttribute('data-v');
+        el.className = 'tab' + (dv === v ? ' on' : '');
+    });
+
     $('addBtn').className = 'add-b' + (v === 'user1' ? ' u1' : v === 'user2' ? ' u2' : '');
+    $('addBtn').textContent = '+ ADD TRANSACTION';
     $('balCard').style.display = v === 'household' ? 'none' : '';
     $('cmpView').className = 'cmp' + (v === 'household' ? ' show' : '');
     if (v !== 'household') sfu(v);
@@ -66,27 +78,34 @@ function sfu(u) {
     $('fu1').className = 'fm-ub u1' + (u === 'user1' ? ' on' : '');
     $('fu2').className = 'fm-ub u2' + (u === 'user2' ? ' on' : '');
     $('fSave').style.background = u === 'user1' ? 'var(--bl)' : 'var(--pu)';
+    $('fSave').style.color = '#fff';
 }
 
 function names() {
     if (!D || !D.u) return;
-    $('t1').textContent = D.u.user1 || 'Me';
-    $('t2').textContent = D.u.user2 || 'Partner';
-    $('fu1').textContent = D.u.user1 || 'Me';
-    $('fu2').textContent = D.u.user2 || 'Partner';
+    var n1 = (D.u.user1 || 'Me').toUpperCase();
+    var n2 = (D.u.user2 || 'Partner').toUpperCase();
+    $('t1').textContent = n1;
+    $('t2').textContent = n2;
+    $('t3').textContent = 'BOTH';
+    $('mt1').textContent = n1;
+    $('mt2').textContent = n2;
+    $('mt3').textContent = 'BOTH';
+    $('fu1').textContent = n1;
+    $('fu2').textContent = n2;
 }
 
 function tf() {
     var f = $('fm');
     var show = !f.classList.contains('show');
     f.classList.toggle('show', show);
-    $('addBtn').textContent = show ? '× Cancel' : '+ Add';
+    $('addBtn').textContent = show ? '× CANCEL' : '+ ADD TRANSACTION';
     if (show) $('fDesc').focus();
 }
 
 function hf() {
     $('fm').classList.remove('show');
-    $('addBtn').textContent = '+ Add';
+    $('addBtn').textContent = '+ ADD TRANSACTION';
     $('txF').reset();
     $('fDate').valueAsDate = new Date();
 }
@@ -94,7 +113,7 @@ function hf() {
 function load() {
     if (!API) return;
     var m = $('mo').value;
-    
+
     fetch(API + '?action=load&m=' + m)
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -102,22 +121,18 @@ function load() {
         })
         .then(function(text) {
             var data;
-            try {
-                data = JSON.parse(text);
-            } catch(e) {
-                console.error('Bad JSON:', text.substring(0, 200));
-                throw new Error('Invalid response');
+            try { data = JSON.parse(text); } catch(e) {
+                throw new Error('Bad response');
             }
             if (data.error) throw new Error(data.error);
             D = data;
             try { localStorage.setItem('bd', JSON.stringify(data)); } catch(e) {}
             names();
             draw();
-            toast('Loaded', 'ok');
         })
         .catch(function(e) {
-            console.error('Load error:', e);
-            toast('Load failed: ' + e.message, 'err');
+            console.error(e);
+            toast('LOAD FAILED', 'err');
         });
 }
 
@@ -130,7 +145,6 @@ function draw() {
     if (V === 'user1') vs = s.u1;
     else if (V === 'user2') vs = s.u2;
     else vs = s.h;
-
     if (!vs) return;
 
     // Balance
@@ -139,30 +153,26 @@ function draw() {
     $('exp').textContent = '-$' + (vs.e || 0).toFixed(2);
 
     if (V === 'user1') {
-        $('incP').textContent = (s.u1.ip || 0) + '% of household';
-        $('expP').textContent = (s.u1.ep || 0) + '% of household';
+        $('incP').textContent = (s.u1.ip || 0) + '% OF HOUSEHOLD';
+        $('expP').textContent = (s.u1.ep || 0) + '% OF HOUSEHOLD';
     } else if (V === 'user2') {
-        $('incP').textContent = (s.u2.ip || 0) + '% of household';
-        $('expP').textContent = (s.u2.ep || 0) + '% of household';
+        $('incP').textContent = (s.u2.ip || 0) + '% OF HOUSEHOLD';
+        $('expP').textContent = (s.u2.ep || 0) + '% OF HOUSEHOLD';
     }
 
-    // Comparison bars
+    // Comparison
     var i1 = s.u1.ip || 0, i2 = s.u2.ip || 0;
     var e1 = s.u1.ep || 0, e2 = s.u2.ep || 0;
 
-    $('ib1').style.width = (i1 || 50) + '%';
-    $('ib1').textContent = i1 + '%';
-    $('ib2').style.width = (i2 || 50) + '%';
-    $('ib2').textContent = i2 + '%';
-    $('iv1').textContent = u.user1 + ': $' + (s.u1.i || 0).toFixed(0);
-    $('iv2').textContent = u.user2 + ': $' + (s.u2.i || 0).toFixed(0);
+    $('ib1').style.width = (i1 || 50) + '%'; $('ib1').textContent = i1 + '%';
+    $('ib2').style.width = (i2 || 50) + '%'; $('ib2').textContent = i2 + '%';
+    $('iv1').textContent = u.user1.toUpperCase() + ': $' + (s.u1.i || 0).toFixed(0);
+    $('iv2').textContent = u.user2.toUpperCase() + ': $' + (s.u2.i || 0).toFixed(0);
 
-    $('eb1').style.width = (e1 || 50) + '%';
-    $('eb1').textContent = e1 + '%';
-    $('eb2').style.width = (e2 || 50) + '%';
-    $('eb2').textContent = e2 + '%';
-    $('ev1').textContent = u.user1 + ': $' + (s.u1.e || 0).toFixed(0);
-    $('ev2').textContent = u.user2 + ': $' + (s.u2.e || 0).toFixed(0);
+    $('eb1').style.width = (e1 || 50) + '%'; $('eb1').textContent = e1 + '%';
+    $('eb2').style.width = (e2 || 50) + '%'; $('eb2').textContent = e2 + '%';
+    $('ev1').textContent = u.user1.toUpperCase() + ': $' + (s.u1.e || 0).toFixed(0);
+    $('ev2').textContent = u.user2.toUpperCase() + ': $' + (s.u2.e || 0).toFixed(0);
 
     $('hi').textContent = '$' + (s.h.i || 0).toFixed(2);
     $('he').textContent = '$' + (s.h.e || 0).toFixed(2);
@@ -171,26 +181,26 @@ function draw() {
 
     // Categories dropdown
     if (D.cats) {
-        $('fCat').innerHTML = '<option value="">Category</option>' +
+        $('fCat').innerHTML = '<option value="">CATEGORY</option>' +
             D.cats.map(function(c) {
-                return '<option value="' + c.n + '">' + c.n + '</option>';
+                return '<option value="' + c.n + '">' + c.n.toUpperCase() + '</option>';
             }).join('');
     }
 
     // Budgets
     var cs = vs.cs || {};
     var bh = '';
-    var hasBudget = false;
+    var has = false;
     for (var cat in cs) {
-        hasBudget = true;
+        has = true;
         var d = cs[cat];
         var spent = d.s || 0;
         var budget = d.b || 0;
         var p = budget > 0 ? Math.min(spent / budget * 100, 100) : 0;
         var cl = p > 90 ? ' o' : p > 75 ? ' w' : '';
-        bh += '<div class="bi"><div class="bh"><span>' + cat + '</span><span>$' + spent.toFixed(0) + ' / $' + budget + '</span></div><div class="bb"><div class="bf' + cl + '" style="width:' + p + '%"></div></div></div>';
+        bh += '<div class="bi"><div class="bh"><span>' + cat.toUpperCase() + '</span><span>$' + spent.toFixed(0) + ' / $' + budget + '</span></div><div class="bb"><div class="bf' + cl + '" style="width:' + p + '%"></div></div></div>';
     }
-    $('bud').innerHTML = hasBudget ? bh : '<div class="empty">No budgets</div>';
+    $('bud').innerHTML = has ? bh : '<div class="empty">NO BUDGETS SET</div>';
 
     // Transactions
     var month = parseInt($('mo').value);
@@ -200,21 +210,17 @@ function draw() {
     var filtered = txList.filter(function(t) {
         try {
             var parts = t.d.split('-');
-            var txMonth = parseInt(parts[1]);
-            var txYear = parseInt(parts[0]);
-            return txMonth === month && txYear === year;
-        } catch(e) {
-            return false;
-        }
+            return parseInt(parts[1]) === month && parseInt(parts[0]) === year;
+        } catch(e) { return false; }
     });
 
     if (V !== 'household') {
-        var viewUser = V === 'user1' ? u.user1 : u.user2;
-        filtered = filtered.filter(function(t) { return t.u === viewUser; });
+        var vu = V === 'user1' ? u.user1 : u.user2;
+        filtered = filtered.filter(function(t) { return t.u === vu; });
     }
 
     if (!filtered.length) {
-        $('txs').innerHTML = '<div class="empty">No transactions this month</div>';
+        $('txs').innerHTML = '<div class="empty">NO TRANSACTIONS</div>';
     } else {
         var h = '';
         var limit = Math.min(filtered.length, 25);
@@ -225,13 +231,13 @@ function draw() {
             var isI = t.t === 'Income';
             var isU1 = t.u === u.user1;
             var ini = t.u ? t.u.substring(0, 2).toUpperCase() : 'ME';
-            var dateStr = txDate.toLocaleDateString('en', {month: 'short', day: 'numeric'});
+            var dateStr = txDate.toLocaleDateString('en', {month: 'short', day: 'numeric'}).toUpperCase();
 
             h += '<div class="ti">' +
                 '<div class="av ' + (isU1 ? 'a1' : 'a2') + '">' + ini + '</div>' +
                 '<div class="tl">' +
-                    '<div class="td">' + (t.ds || 'No description') + '</div>' +
-                    '<div class="tm">' + dateStr + ' <span class="tc">' + (t.c || '') + '</span></div>' +
+                    '<div class="td">' + (t.ds || '—').toUpperCase() + '</div>' +
+                    '<div class="tm">' + dateStr + ' <span class="tc">' + (t.c || '').toUpperCase() + '</span></div>' +
                 '</div>' +
                 '<div class="tr">' +
                     '<span class="ta ' + (isI ? 'green' : '') + '">' + (isI ? '+' : '-') + '$' + Math.abs(t.a || 0).toFixed(2) + '</span>' +
@@ -242,23 +248,19 @@ function draw() {
         $('txs').innerHTML = h;
     }
 
-    // Charts
     doCharts(vs);
 
-    // Settings categories
     if (D.cats) {
         $('catL').innerHTML = D.cats.map(function(c) {
-            return '<div class="ci"><span>' + c.n + '</span><input type="number" value="' + c.b + '" onchange="ubud(\'' + c.n + '\',this.value)"></div>';
+            return '<div class="ci"><span>' + c.n.toUpperCase() + '</span><input type="number" value="' + c.b + '" onchange="ubud(\'' + c.n + '\',this.value)"></div>';
         }).join('');
     }
 }
 
 function doCharts(vs) {
-    // Destroy old charts safely
     try { if (cC) { cC.destroy(); cC = null; } } catch(e) {}
     try { if (dC) { dC.destroy(); dC = null; } } catch(e) {}
 
-    // Rebuild canvas elements (fixes canvas reuse bugs)
     var catParent = $('cC').parentElement;
     catParent.innerHTML = '<canvas id="cC"></canvas>';
     var dayParent = $('dC').parentElement;
@@ -267,24 +269,18 @@ function doCharts(vs) {
     var cs = vs.cs || {};
     var ds = vs.ds || {};
 
-    // Category data
     var cd = [];
-    for (var k in cs) {
-        if (cs[k].s > 0) cd.push([k, cs[k].s]);
-    }
-
-    // Daily data
+    for (var k in cs) { if (cs[k].s > 0) cd.push([k, cs[k].s]); }
     var dd = [];
-    for (var k in ds) {
-        dd.push([parseInt(k), ds[k]]);
-    }
+    for (var k in ds) { dd.push([parseInt(k), ds[k]]); }
     dd.sort(function(a, b) { return a[0] - b[0]; });
 
+    // Brutalist chart colors
     var colors = V === 'user1'
-        ? ['#4A90D9','#6BA3E0','#8CB6E7','#ADC9EE','#CEDCF5','#3A7BC8','#2A6CB7']
+        ? ['#4A90D9','#3A7BC8','#2A6CB7','#6BA3E0','#8CB6E7','#1A5CA6','#5393CC']
         : V === 'user2'
-        ? ['#9B6FB0','#AF85C0','#C39BD0','#D7B1E0','#EBCEF0','#8E5AA0','#7D4990']
-        : ['#25343F','#3D5261','#557083','#6D8EA5','#FF9B51','#BFC9D1','#EAEFEF'];
+        ? ['#9B6FB0','#8A5EA0','#7A4D90','#AB80C0','#BC91D0','#6A3D80','#8B6EA5']
+        : ['#25343F','#FF9B51','#BFC9D1','#4A5D6B','#7A8E9A','#E8863F','#3D5261'];
 
     var lineColor = V === 'user1' ? '#4A90D9' : V === 'user2' ? '#9B6FB0' : '#FF9B51';
 
@@ -293,40 +289,45 @@ function doCharts(vs) {
         cC = new Chart($('cC'), {
             type: 'doughnut',
             data: {
-                labels: cd.map(function(x) { return x[0]; }),
+                labels: cd.map(function(x) { return x[0].toUpperCase(); }),
                 datasets: [{
                     data: cd.map(function(x) { return x[1]; }),
                     backgroundColor: colors.slice(0, cd.length),
-                    borderWidth: 0
+                    borderWidth: 3,
+                    borderColor: '#fff'
                 }]
             },
             options: {
+                cutout: '60%',
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { boxWidth: 8, font: { size: 10 }, padding: 6 }
+                        labels: {
+                            boxWidth: 10,
+                            boxHeight: 10,
+                            font: { size: 9, weight: 'bold', family: "'Space Mono', monospace" },
+                            padding: 8,
+                            color: '#25343F'
+                        }
                     }
                 }
             }
         });
     } else {
-        $('cC').parentElement.innerHTML = '<div class="empty">No spending data</div>';
+        $('cC').parentElement.innerHTML = '<div class="empty">NO DATA</div>';
     }
 
     // Daily chart
     if (dd.length > 0) {
         dC = new Chart($('dC'), {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: dd.map(function(x) { return x[0]; }),
                 datasets: [{
                     data: dd.map(function(x) { return x[1]; }),
-                    borderColor: lineColor,
-                    backgroundColor: lineColor + '15',
-                    tension: 0.3,
-                    borderWidth: 1.5,
-                    pointRadius: 2,
-                    fill: true
+                    backgroundColor: lineColor,
+                    borderColor: '#25343F',
+                    borderWidth: 2
                 }]
             },
             options: {
@@ -334,25 +335,34 @@ function doCharts(vs) {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: { callback: function(v) { return '$' + v; }, font: { size: 10 } },
-                        grid: { color: '#eee' }
+                        ticks: {
+                            callback: function(v) { return '$' + v; },
+                            font: { size: 9, family: "'Space Mono', monospace" },
+                            color: '#7A8E9A'
+                        },
+                        grid: { color: '#EAEFEF', lineWidth: 2 },
+                        border: { color: '#25343F', width: 2 }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { font: { size: 10 } }
+                        ticks: {
+                            font: { size: 9, family: "'Space Mono', monospace" },
+                            color: '#7A8E9A'
+                        },
+                        border: { color: '#25343F', width: 2 }
                     }
                 }
             }
         });
     } else {
-        $('dC').parentElement.innerHTML = '<div class="empty">No daily data</div>';
+        $('dC').parentElement.innerHTML = '<div class="empty">NO DATA</div>';
     }
 }
 
 function addTx(e) {
     e.preventDefault();
-    if (!API) return toast('Set API URL', 'err');
-    if (!D || !D.u) return toast('Data not loaded', 'err');
+    if (!API) return toast('SET API URL', 'err');
+    if (!D || !D.u) return toast('NOT LOADED', 'err');
 
     var user = FU === 'user1' ? D.u.user1 : D.u.user2;
     var data = {
@@ -365,32 +375,29 @@ function addTx(e) {
     };
 
     if (!data.date || !data.cat || !data.desc || !data.amt) {
-        return toast('Fill all fields', 'err');
+        return toast('FILL ALL FIELDS', 'err');
     }
 
     hf();
-    toast('Saving...');
+    toast('SAVING...');
 
     fetch(API + '?action=add&d=' + encodeURIComponent(JSON.stringify(data)))
         .then(function(r) { return r.text(); })
         .then(function(text) {
             var resp;
-            try { resp = JSON.parse(text); } catch(e) {
-                throw new Error('Bad response');
-            }
+            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
             if (resp.error) throw new Error(resp.error);
-            toast('Added!', 'ok');
-            load(); // Reload data
+            toast('ADDED', 'ok');
+            load();
         })
         .catch(function(e) {
-            console.error('Add error:', e);
-            toast('Failed: ' + e.message, 'err');
+            toast('FAILED: ' + e.message, 'err');
         });
 }
 
 function del(row) {
-    if (!confirm('Delete this transaction?')) return;
-    toast('Deleting...');
+    if (!confirm('DELETE THIS TRANSACTION?')) return;
+    toast('DELETING...');
 
     fetch(API + '?action=del&r=' + row)
         .then(function(r) { return r.text(); })
@@ -398,12 +405,11 @@ function del(row) {
             var resp;
             try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
             if (resp.error) throw new Error(resp.error);
-            toast('Deleted', 'ok');
+            toast('DELETED', 'ok');
             load();
         })
         .catch(function(e) {
-            console.error('Delete error:', e);
-            toast('Failed: ' + e.message, 'err');
+            toast('FAILED', 'err');
         });
 }
 
@@ -412,14 +418,12 @@ function ubud(cat, b) {
         .then(function(r) { return r.text(); })
         .then(function(text) {
             var resp;
-            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
+            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
             if (resp.error) throw new Error(resp.error);
-            toast('Budget updated', 'ok');
+            toast('UPDATED', 'ok');
             load();
         })
-        .catch(function(e) {
-            toast('Failed', 'err');
-        });
+        .catch(function() { toast('FAILED', 'err'); });
 }
 
 function sm() {
@@ -431,42 +435,33 @@ function sm() {
     }
 }
 
-function hm() {
-    $('modal').classList.remove('show');
-}
+function hm() { $('modal').classList.remove('show'); }
 
 function savSettings() {
     var url = $('apiI').value.trim();
-    if (url) {
-        API = url;
-        localStorage.setItem('budgetApi', url);
-    }
+    if (url) { API = url; localStorage.setItem('budgetApi', url); }
 
     var u1 = $('n1').value.trim() || 'Me';
     var u2 = $('n2').value.trim() || 'Partner';
 
-    if (!API) return toast('Enter API URL', 'err');
+    if (!API) return toast('ENTER API URL', 'err');
 
-    toast('Saving...');
+    toast('SAVING...');
 
     fetch(API + '?action=users&d=' + encodeURIComponent(JSON.stringify({user1: u1, user2: u2})))
         .then(function(r) { return r.text(); })
         .then(function(text) {
             var resp;
-            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
+            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
             if (resp.error) throw new Error(resp.error);
             if (D) {
                 D.u = {user1: u1, user2: u2};
                 try { localStorage.setItem('bd', JSON.stringify(D)); } catch(e) {}
             }
-            names();
-            hm();
-            load();
-            toast('Saved!', 'ok');
+            names(); hm(); load();
+            toast('SAVED', 'ok');
         })
-        .catch(function(e) {
-            toast('Failed: ' + e.message, 'err');
-        });
+        .catch(function(e) { toast('FAILED', 'err'); });
 }
 
 function toast(msg, type) {
