@@ -16,10 +16,6 @@
     --t3:#7A8E9A;
     --br:#25343F;
     --accent:#FF9B51;
-    --bl:#4A90D9;
-    --pu:#9B6FB0;
-    --gn:#2D8A6E;
-    --rd:#C43E3E;
     --mid:#BFC9D1;
 }
 body{font-family:'Space Mono',monospace;background:var(--bg);color:var(--t);font-size:13px;overscroll-behavior:none}
@@ -32,10 +28,7 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .tabs{display:flex;flex:1}
 .tab{padding:14px 16px;background:transparent;border:none;border-right:2px solid rgba(255,255,255,.1);cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);transition:all .1s;flex:1;text-align:center}
 .tab:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.7)}
-.tab.on{color:var(--t);border-bottom:none}
-.tab[data-v=user1].on{background:var(--bl);color:#fff}
-.tab[data-v=user2].on{background:var(--pu);color:#fff}
-.tab[data-v=household].on{background:var(--accent);color:var(--t)}
+.tab.on{background:var(--accent);color:var(--t);border-color:var(--accent)}
 .nr{display:flex;align-items:stretch}
 .sel{padding:0 12px;border:none;border-left:2px solid rgba(255,255,255,.1);background:transparent;font-size:11px;font-weight:700;color:#fff;cursor:pointer;text-transform:uppercase;letter-spacing:.05em}
 .sel option{color:var(--t);background:var(--c)}
@@ -47,31 +40,33 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 
 /* BALANCE */
 .bal{background:var(--c);border:3px solid var(--t);padding:0;margin-bottom:16px;position:relative}
-.bal::before{content:'BALANCE';position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em;text-transform:uppercase}
+.bal-tag{position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em;text-transform:uppercase}
 .bal-v{font-size:48px;font-weight:700;padding:40px 20px 16px;border-bottom:3px solid var(--t);letter-spacing:-.02em}
 .bal-r{display:flex}
 .bal-i{flex:1;padding:14px 20px;text-align:left}
 .bal-i:first-child{border-right:3px solid var(--t)}
 .bal-i .l{font-size:9px;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:var(--t3);margin-bottom:4px;display:block}
 .bal-i .v{font-size:20px;font-weight:700}
-.green{color:var(--gn)}.red{color:var(--rd)}
+.v-in{color:var(--t)}
+.v-ex{color:var(--accent)}
 .bal-p{font-size:10px;color:var(--t3);margin-top:4px;font-weight:400}
 
 /* COMPARISON */
 .cmp{background:var(--c);border:3px solid var(--t);margin-bottom:16px;display:none;position:relative}
 .cmp.show{display:block}
-.cmp::before{content:'HOUSEHOLD';position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em}
+.cmp-tag{position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em;text-transform:uppercase}
 .cmp-inner{padding:36px 16px 16px}
 .cmp-row{margin-bottom:16px}
 .cmp-row:last-of-type{margin-bottom:0}
 .cmp-rl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--t);margin-bottom:6px}
 .bar-wrap{height:32px;background:var(--bg);border:2px solid var(--t);display:flex;overflow:hidden}
-.bar-f{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;min-width:32px;transition:width .3s}
-.bar-f.b1{background:var(--bl)}.bar-f.b2{background:var(--pu)}
+.bar-f{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;min-width:32px;transition:width .4s}
+.bar-f.b1{background:var(--t);color:var(--accent)}
+.bar-f.b2{background:var(--accent);color:var(--t)}
 .cmp-vals{display:flex;justify-content:space-between;font-size:10px;margin-top:6px;font-weight:700}
-.cmp-vals span:first-child{color:var(--bl)}
-.cmp-vals span:last-child{color:var(--pu)}
-.cmp-totals{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:3px solid var(--t);margin-top:16px}
+.cmp-vals span:first-child{color:var(--t)}
+.cmp-vals span:last-child{color:var(--accent)}
+.cmp-totals{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:3px solid var(--t);margin-top:0}
 .cmp-totals>div{padding:14px 12px;text-align:left}
 .cmp-totals>div:not(:last-child){border-right:3px solid var(--t)}
 .cmp-totals .lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)}
@@ -82,31 +77,29 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .add-b{width:100%;padding:14px;border:3px solid var(--t);background:var(--accent);cursor:pointer;font-weight:700;font-size:14px;color:var(--t);text-transform:uppercase;letter-spacing:.15em;transition:all .1s;text-align:center}
 .add-b:hover{background:var(--t);color:var(--accent);border-color:var(--accent)}
 .add-b:active{transform:translate(2px,2px)}
-.add-b.u1{background:var(--bl);color:#fff;border-color:var(--t)}
-.add-b.u1:hover{background:var(--t);color:var(--bl);border-color:var(--bl)}
-.add-b.u2{background:var(--pu);color:#fff;border-color:var(--t)}
-.add-b.u2:hover{background:var(--t);color:var(--pu);border-color:var(--pu)}
 
 /* FORM */
 .fm{background:var(--c);border:3px solid var(--t);margin-bottom:16px;display:none}
 .fm.show{display:block}
+.fm-header{background:var(--t);color:var(--accent);padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center}
+.fm-header span{opacity:.6}
 .fm-u{display:flex;border-bottom:3px solid var(--t)}
 .fm-ub{flex:1;padding:12px;border:none;background:var(--c);cursor:pointer;font-size:11px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);transition:all .1s}
 .fm-ub:first-child{border-right:3px solid var(--t)}
-.fm-ub.on{color:#fff}
-.fm-ub.u1.on{background:var(--bl)}
-.fm-ub.u2.on{background:var(--pu)}
+.fm-ub.u1.on{background:var(--t);color:var(--accent)}
+.fm-ub.u2.on{background:var(--accent);color:var(--t)}
 .fg{display:grid;grid-template-columns:1fr 1fr;padding:0}
 .fi{padding:12px;border:none;border-bottom:2px solid var(--t);border-right:2px solid var(--t);width:100%;font-size:12px;background:var(--c);color:var(--t)}
 .fi:focus{outline:none;background:var(--bg)}
 .fi::placeholder{color:var(--mid)}
-.fi:last-of-type{border-right:none}
 .fa{grid-column:span 2;display:flex;border-top:1px solid var(--t)}
 .btn{padding:12px 20px;border:none;cursor:pointer;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.1em;transition:all .1s}
 .bp{background:var(--accent);color:var(--t);flex:2}
 .bp:hover{background:var(--t);color:var(--accent)}
 .bs{background:var(--c);color:var(--t3);flex:1;border-right:3px solid var(--t)}
 .bs:hover{background:var(--bg)}
+.bd{background:var(--t);color:var(--accent);flex:1}
+.bd:hover{background:var(--accent);color:var(--t)}
 
 /* SECTION */
 .sec{background:var(--c);border:3px solid var(--t);margin-bottom:16px;position:relative}
@@ -123,26 +116,31 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .bh{display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;font-weight:700}
 .bh span:last-child{color:var(--t3);font-weight:400}
 .bb{height:6px;background:var(--bg);border:1px solid var(--t);overflow:hidden}
-.bf{height:100%;background:var(--accent);transition:width .3s}
-.bf.w{background:#D4A03C}
-.bf.o{background:var(--rd)}
+.bf{height:100%;background:var(--t);transition:width .3s}
+.bf.w{background:var(--accent)}
+.bf.o{background:var(--accent)}
 
 /* TRANSACTIONS */
 .txs-inner{padding:36px 0 0}
-.ti{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:2px solid var(--t)}
+.ti{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:2px solid var(--t);cursor:pointer;transition:background .1s}
 .ti:last-child{border-bottom:none}
 .ti:hover{background:var(--bg)}
-.av{width:32px;height:32px;border:2px solid var(--t);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
-.av.a1{background:var(--bl)}.av.a2{background:var(--pu)}
+.ti:active{background:var(--mid)}
+.av{width:32px;height:32px;border:2px solid var(--t);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.av.a1{background:var(--t);color:var(--accent)}
+.av.a2{background:var(--accent);color:var(--t)}
 .tl{flex:1;min-width:0}
 .td{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}
 .tm{font-size:10px;color:var(--t3);display:flex;gap:6px;align-items:center;margin-top:2px}
 .tc{background:var(--t);color:var(--accent);padding:1px 6px;font-size:9px;text-transform:uppercase;font-weight:700;letter-spacing:.05em}
-.tr{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tr{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .ta{font-weight:700;font-size:14px;letter-spacing:-.02em}
-.ta.green{color:var(--gn)}
-.db{background:var(--t);border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:2px 6px;line-height:1;font-weight:700;transition:all .1s}
-.db:hover{background:var(--rd);color:#fff}
+.ta.t-in{color:var(--t)}
+.ta.t-ex{color:var(--accent)}
+.tx-actions{display:flex;gap:4px}
+.tx-btn{background:var(--t);border:2px solid var(--t);color:var(--accent);cursor:pointer;font-size:11px;padding:4px 8px;font-weight:700;transition:all .1s;text-transform:uppercase}
+.tx-btn:hover{background:var(--accent);color:var(--t);border-color:var(--accent)}
+.tx-btn.del:hover{background:#C43E3E;border-color:#C43E3E;color:#fff}
 
 /* EMPTY / LOADING */
 .empty{text-align:center;color:var(--t3);padding:40px 20px;font-size:12px;text-transform:uppercase;letter-spacing:.1em}
@@ -161,22 +159,28 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .mo-d{padding:16px}
 .mo-f{padding:16px;border-top:3px solid var(--t)}
 .mo-f .bp{width:100%;padding:14px}
+.mo-f-row{display:flex;gap:8px}
+.mo-f-row .btn{flex:1;padding:14px;text-align:center}
 .sg{margin-bottom:18px}
 .sl{font-size:10px;font-weight:700;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.1em}
 .si{width:100%;padding:10px;border:2px solid var(--t);font-size:12px;color:var(--t);background:var(--c)}
 .si:focus{outline:none;background:var(--bg);border-color:var(--accent)}
 .sh{font-size:10px;color:var(--t3);margin-top:4px}
 .sr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sr .si:first-child{border-left:4px solid var(--bl)}
-.sr .si:last-child{border-left:4px solid var(--pu)}
+.sr .si:first-child{border-left:4px solid var(--t)}
+.sr .si:last-child{border-left:4px solid var(--accent)}
 .ci{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:2px solid var(--t);margin-bottom:6px;font-size:11px;font-weight:700;text-transform:uppercase}
 .ci input{width:80px;padding:6px;border:2px solid var(--t);font-size:11px;font-weight:700;text-align:right;background:var(--c)}
 .ci input:focus{outline:none;border-color:var(--accent)}
 
+/* CONFIRM MODAL */
+.confirm-text{font-size:13px;line-height:1.6;margin-bottom:16px;text-align:center;padding:10px}
+.confirm-text strong{color:var(--accent)}
+
 /* TOAST */
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);padding:12px 24px;background:var(--t);color:var(--accent);font-size:12px;font-weight:700;z-index:200;white-space:nowrap;border:3px solid var(--accent);text-transform:uppercase;letter-spacing:.1em}
-.toast.ok{background:var(--gn);color:#fff;border-color:var(--gn)}
-.toast.err{background:var(--rd);color:#fff;border-color:var(--rd)}
+.toast.ok{background:var(--t);color:var(--accent);border-color:var(--accent)}
+.toast.err{background:var(--accent);color:var(--t);border-color:var(--t)}
 
 @media(max-width:500px){
     .cg{grid-template-columns:1fr}
@@ -189,6 +193,7 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
     .tab-mobile{display:flex;border:3px solid var(--t);border-top:none;margin-bottom:16px}
     .tab-mobile .tab{border:none;border-right:3px solid var(--t);padding:10px;flex:1}
     .tab-mobile .tab:last-child{border-right:none}
+    .tx-actions{flex-direction:column;gap:2px}
 }
 @media(min-width:501px){
     .tab-mobile{display:none!important}
@@ -210,7 +215,6 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 </div></nav>
 
 <main class="m">
-  <!-- Mobile tabs -->
   <div class="tab-mobile">
     <button class="tab" data-v="user1" id="mt1">Me</button>
     <button class="tab" data-v="user2" id="mt2">Partner</button>
@@ -218,14 +222,16 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
   </div>
 
   <div class="bal" id="balCard">
+    <div class="bal-tag" id="balTag">BALANCE</div>
     <div class="bal-v" id="bal">$0.00</div>
     <div class="bal-r">
-      <div class="bal-i"><span class="l">Income</span><span class="v green" id="inc">+$0</span><div class="bal-p" id="incP"></div></div>
-      <div class="bal-i"><span class="l">Expenses</span><span class="v red" id="exp">-$0</span><div class="bal-p" id="expP"></div></div>
+      <div class="bal-i"><span class="l">Income</span><span class="v v-in" id="inc">+$0</span><div class="bal-p" id="incP"></div></div>
+      <div class="bal-i"><span class="l">Expenses</span><span class="v v-ex" id="exp">-$0</span><div class="bal-p" id="expP"></div></div>
     </div>
   </div>
 
   <div class="cmp" id="cmpView">
+    <div class="cmp-tag">HOUSEHOLD</div>
     <div class="cmp-inner">
       <div class="cmp-row">
         <div class="cmp-rl">Income</div>
@@ -239,8 +245,8 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
       </div>
     </div>
     <div class="cmp-totals">
-      <div><div class="lbl">Income</div><div class="v green" id="hi">$0</div></div>
-      <div><div class="lbl">Expenses</div><div class="v red" id="he">$0</div></div>
+      <div><div class="lbl">Income</div><div class="v" id="hi">$0</div></div>
+      <div><div class="lbl">Expenses</div><div class="v" id="he">$0</div></div>
       <div><div class="lbl">Balance</div><div class="v" id="hb">$0</div></div>
     </div>
   </div>
@@ -248,6 +254,10 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
   <div class="add"><button class="add-b" id="addBtn">+ ADD TRANSACTION</button></div>
 
   <div class="fm" id="fm">
+    <div class="fm-header">
+      <span id="fmTitle">NEW TRANSACTION</span>
+      <span id="fmEditId"></span>
+    </div>
     <div class="fm-u">
       <button type="button" class="fm-ub u1 on" id="fu1">Me</button>
       <button type="button" class="fm-ub u2" id="fu2">Partner</button>
@@ -258,7 +268,7 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
       <select id="fCat" class="fi" required><option value="">CATEGORY</option></select>
       <input type="number" id="fAmt" class="fi" placeholder="0.00" step="0.01" inputmode="decimal" required>
       <select id="fType" class="fi"><option value="Expense">EXPENSE</option><option value="Income">INCOME</option></select>
-      <div class="fa">
+      <div class="fa" id="faBtns">
         <button type="button" class="btn bs" id="fCancel">CANCEL</button>
         <button type="submit" class="btn bp" id="fSave">SAVE</button>
       </div>
@@ -281,6 +291,7 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
   </div>
 </main>
 
+<!-- Settings Modal -->
 <div class="mo" id="modal">
   <div class="mo-bg" id="moBg"></div>
   <div class="mo-b">
@@ -291,6 +302,23 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
       <div class="sg"><label class="sl">Budgets</label><div id="catL"></div></div>
     </div>
     <div class="mo-f"><button class="btn bp" id="savS">SAVE CHANGES</button></div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="mo" id="delModal">
+  <div class="mo-bg" id="delBg"></div>
+  <div class="mo-b">
+    <div class="mo-h"><h2>Delete?</h2><button class="mo-x" id="delX">×</button></div>
+    <div class="mo-d">
+      <div class="confirm-text" id="delText">Delete this transaction?</div>
+    </div>
+    <div class="mo-f">
+      <div class="mo-f-row">
+        <button class="btn bs" id="delNo">CANCEL</button>
+        <button class="btn bd" id="delYes">DELETE</button>
+      </div>
+    </div>
   </div>
 </div>
 

@@ -3,6 +3,8 @@ var D = null;
 var V = localStorage.getItem('bv') || 'household';
 var FU = 'user1';
 var cC = null, dC = null;
+var EDIT_ROW = null; // Track if editing
+var DEL_ROW = null;  // Track delete target
 var $ = function(id) { return document.getElementById(id); };
 
 Chart.defaults.animation = false;
@@ -22,25 +24,33 @@ document.addEventListener('DOMContentLoaded', function() {
     try { D = JSON.parse(localStorage.getItem('bd')); } catch(e) {}
     if (D) { names(); draw(); }
 
-    // Desktop tabs
+    // Tabs
     $('t1').onclick = function() { sv('user1'); };
     $('t2').onclick = function() { sv('user2'); };
     $('t3').onclick = function() { sv('household'); };
-
-    // Mobile tabs
     $('mt1').onclick = function() { sv('user1'); };
     $('mt2').onclick = function() { sv('user2'); };
     $('mt3').onclick = function() { sv('household'); };
 
+    // Form
     $('addBtn').onclick = tf;
     $('fCancel').onclick = hf;
     $('fu1').onclick = function() { sfu('user1'); };
     $('fu2').onclick = function() { sfu('user2'); };
-    $('txF').onsubmit = addTx;
+    $('txF').onsubmit = saveTx;
+
+    // Settings modal
     $('setBtn').onclick = sm;
     $('moX').onclick = hm;
     $('moBg').onclick = hm;
     $('savS').onclick = savSettings;
+
+    // Delete modal
+    $('delX').onclick = hdm;
+    $('delBg').onclick = hdm;
+    $('delNo').onclick = hdm;
+    $('delYes').onclick = confirmDel;
+
     $('mo').onchange = load;
 
     sv(V);
@@ -57,7 +67,6 @@ function sv(v) {
     V = v;
     localStorage.setItem('bv', v);
 
-    // Update all tabs (desktop + mobile)
     ['t1','t2','t3','mt1','mt2','mt3'].forEach(function(id) {
         var el = $(id);
         if (!el) return;
@@ -65,10 +74,17 @@ function sv(v) {
         el.className = 'tab' + (dv === v ? ' on' : '');
     });
 
-    $('addBtn').className = 'add-b' + (v === 'user1' ? ' u1' : v === 'user2' ? ' u2' : '');
     $('addBtn').textContent = '+ ADD TRANSACTION';
     $('balCard').style.display = v === 'household' ? 'none' : '';
     $('cmpView').className = 'cmp' + (v === 'household' ? ' show' : '');
+
+    if (D && D.u && v !== 'household') {
+        var name = v === 'user1' ? D.u.user1 : D.u.user2;
+        $('balTag').textContent = name.toUpperCase();
+    } else {
+        $('balTag').textContent = 'BALANCE';
+    }
+
     if (v !== 'household') sfu(v);
     if (D) draw();
 }
@@ -77,8 +93,6 @@ function sfu(u) {
     FU = u;
     $('fu1').className = 'fm-ub u1' + (u === 'user1' ? ' on' : '');
     $('fu2').className = 'fm-ub u2' + (u === 'user2' ? ' on' : '');
-    $('fSave').style.background = u === 'user1' ? 'var(--bl)' : 'var(--pu)';
-    $('fSave').style.color = '#fff';
 }
 
 function names() {
@@ -93,21 +107,75 @@ function names() {
     $('mt3').textContent = 'BOTH';
     $('fu1').textContent = n1;
     $('fu2').textContent = n2;
+
+    if (V !== 'household') {
+        var name = V === 'user1' ? D.u.user1 : D.u.user2;
+        $('balTag').textContent = name.toUpperCase();
+    }
 }
 
+// Toggle form for ADD
 function tf() {
+    EDIT_ROW = null;
     var f = $('fm');
     var show = !f.classList.contains('show');
     f.classList.toggle('show', show);
     $('addBtn').textContent = show ? '× CANCEL' : '+ ADD TRANSACTION';
-    if (show) $('fDesc').focus();
+    $('fmTitle').textContent = 'NEW TRANSACTION';
+    $('fmEditId').textContent = '';
+    if (show) {
+        resetForm();
+        $('fDesc').focus();
+    }
 }
 
+// Open form for EDIT
+function editTx(row) {
+    if (!D || !D.tx) return;
+
+    // Find transaction
+    var tx = null;
+    for (var i = 0; i < D.tx.length; i++) {
+        if (D.tx[i].r === row) {
+            tx = D.tx[i];
+            break;
+        }
+    }
+    if (!tx) return toast('NOT FOUND', 'err');
+
+    EDIT_ROW = row;
+    $('fm').classList.add('show');
+    $('addBtn').textContent = '× CANCEL';
+    $('fmTitle').textContent = 'EDIT TRANSACTION';
+    $('fmEditId').textContent = '#' + row;
+
+    // Fill form
+    $('fDate').value = tx.d;
+    $('fDesc').value = tx.ds || '';
+    $('fCat').value = tx.c || '';
+    $('fAmt').value = Math.abs(tx.a) || '';
+    $('fType').value = tx.t || 'Expense';
+
+    // Set user
+    var isU1 = tx.u === D.u.user1;
+    sfu(isU1 ? 'user1' : 'user2');
+
+    $('fDesc').focus();
+}
+
+// Hide form
 function hf() {
+    EDIT_ROW = null;
     $('fm').classList.remove('show');
     $('addBtn').textContent = '+ ADD TRANSACTION';
+    resetForm();
+}
+
+function resetForm() {
     $('txF').reset();
     $('fDate').valueAsDate = new Date();
+    $('fmTitle').textContent = 'NEW TRANSACTION';
+    $('fmEditId').textContent = '';
 }
 
 function load() {
@@ -147,7 +215,6 @@ function draw() {
     else vs = s.h;
     if (!vs) return;
 
-    // Balance
     $('bal').textContent = '$' + (vs.bl || 0).toFixed(2);
     $('inc').textContent = '+$' + (vs.i || 0).toFixed(2);
     $('exp').textContent = '-$' + (vs.e || 0).toFixed(2);
@@ -177,7 +244,6 @@ function draw() {
     $('hi').textContent = '$' + (s.h.i || 0).toFixed(2);
     $('he').textContent = '$' + (s.h.e || 0).toFixed(2);
     $('hb').textContent = '$' + (s.h.bl || 0).toFixed(2);
-    $('hb').style.color = (s.h.bl || 0) >= 0 ? 'var(--gn)' : 'var(--rd)';
 
     // Categories dropdown
     if (D.cats) {
@@ -197,7 +263,8 @@ function draw() {
         var spent = d.s || 0;
         var budget = d.b || 0;
         var p = budget > 0 ? Math.min(spent / budget * 100, 100) : 0;
-        var cl = p > 90 ? ' o' : p > 75 ? ' w' : '';
+        var cl = p > 75 ? ' w' : '';
+        if (p > 90) cl = ' o';
         bh += '<div class="bi"><div class="bh"><span>' + cat.toUpperCase() + '</span><span>$' + spent.toFixed(0) + ' / $' + budget + '</span></div><div class="bb"><div class="bf' + cl + '" style="width:' + p + '%"></div></div></div>';
     }
     $('bud').innerHTML = has ? bh : '<div class="empty">NO BUDGETS SET</div>';
@@ -223,7 +290,7 @@ function draw() {
         $('txs').innerHTML = '<div class="empty">NO TRANSACTIONS</div>';
     } else {
         var h = '';
-        var limit = Math.min(filtered.length, 25);
+        var limit = Math.min(filtered.length, 30);
         for (var i = 0; i < limit; i++) {
             var t = filtered[i];
             var parts = t.d.split('-');
@@ -240,8 +307,11 @@ function draw() {
                     '<div class="tm">' + dateStr + ' <span class="tc">' + (t.c || '').toUpperCase() + '</span></div>' +
                 '</div>' +
                 '<div class="tr">' +
-                    '<span class="ta ' + (isI ? 'green' : '') + '">' + (isI ? '+' : '-') + '$' + Math.abs(t.a || 0).toFixed(2) + '</span>' +
-                    '<button class="db" onclick="del(' + t.r + ')">×</button>' +
+                    '<span class="ta ' + (isI ? 't-in' : 't-ex') + '">' + (isI ? '+' : '-') + '$' + Math.abs(t.a || 0).toFixed(2) + '</span>' +
+                    '<div class="tx-actions">' +
+                        '<button class="tx-btn" onclick="editTx(' + t.r + ')">EDIT</button>' +
+                        '<button class="tx-btn del" onclick="delTx(' + t.r + ',\'' + (t.ds || '').replace(/'/g, "\\'") + '\',' + (t.a || 0) + ')">DEL</button>' +
+                    '</div>' +
                 '</div>' +
             '</div>';
         }
@@ -275,16 +345,8 @@ function doCharts(vs) {
     for (var k in ds) { dd.push([parseInt(k), ds[k]]); }
     dd.sort(function(a, b) { return a[0] - b[0]; });
 
-    // Brutalist chart colors
-    var colors = V === 'user1'
-        ? ['#4A90D9','#3A7BC8','#2A6CB7','#6BA3E0','#8CB6E7','#1A5CA6','#5393CC']
-        : V === 'user2'
-        ? ['#9B6FB0','#8A5EA0','#7A4D90','#AB80C0','#BC91D0','#6A3D80','#8B6EA5']
-        : ['#25343F','#FF9B51','#BFC9D1','#4A5D6B','#7A8E9A','#E8863F','#3D5261'];
+    var colors = ['#25343F', '#FF9B51', '#BFC9D1', '#EAEFEF', '#3D5261', '#E8863F', '#8A9DA8'];
 
-    var lineColor = V === 'user1' ? '#4A90D9' : V === 'user2' ? '#9B6FB0' : '#FF9B51';
-
-    // Category chart
     if (cd.length > 0) {
         cC = new Chart($('cC'), {
             type: 'doughnut',
@@ -298,15 +360,15 @@ function doCharts(vs) {
                 }]
             },
             options: {
-                cutout: '60%',
+                cutout: '55%',
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
                             boxWidth: 10,
                             boxHeight: 10,
-                            font: { size: 9, weight: 'bold', family: "'Space Mono', monospace" },
-                            padding: 8,
+                            font: { size: 9, weight: 'bold' },
+                            padding: 6,
                             color: '#25343F'
                         }
                     }
@@ -317,7 +379,6 @@ function doCharts(vs) {
         $('cC').parentElement.innerHTML = '<div class="empty">NO DATA</div>';
     }
 
-    // Daily chart
     if (dd.length > 0) {
         dC = new Chart($('dC'), {
             type: 'bar',
@@ -325,7 +386,7 @@ function doCharts(vs) {
                 labels: dd.map(function(x) { return x[0]; }),
                 datasets: [{
                     data: dd.map(function(x) { return x[1]; }),
-                    backgroundColor: lineColor,
+                    backgroundColor: '#FF9B51',
                     borderColor: '#25343F',
                     borderWidth: 2
                 }]
@@ -337,7 +398,7 @@ function doCharts(vs) {
                         beginAtZero: true,
                         ticks: {
                             callback: function(v) { return '$' + v; },
-                            font: { size: 9, family: "'Space Mono', monospace" },
+                            font: { size: 9 },
                             color: '#7A8E9A'
                         },
                         grid: { color: '#EAEFEF', lineWidth: 2 },
@@ -345,10 +406,7 @@ function doCharts(vs) {
                     },
                     x: {
                         grid: { display: false },
-                        ticks: {
-                            font: { size: 9, family: "'Space Mono', monospace" },
-                            color: '#7A8E9A'
-                        },
+                        ticks: { font: { size: 9 }, color: '#7A8E9A' },
                         border: { color: '#25343F', width: 2 }
                     }
                 }
@@ -359,7 +417,8 @@ function doCharts(vs) {
     }
 }
 
-function addTx(e) {
+// Save (Add or Edit)
+function saveTx(e) {
     e.preventDefault();
     if (!API) return toast('SET API URL', 'err');
     if (!D || !D.u) return toast('NOT LOADED', 'err');
@@ -378,32 +437,69 @@ function addTx(e) {
         return toast('FILL ALL FIELDS', 'err');
     }
 
-    hf();
-    toast('SAVING...');
-
-    fetch(API + '?action=add&d=' + encodeURIComponent(JSON.stringify(data)))
-        .then(function(r) { return r.text(); })
-        .then(function(text) {
-            var resp;
-            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
-            if (resp.error) throw new Error(resp.error);
-            toast('ADDED', 'ok');
-            load();
-        })
-        .catch(function(e) {
-            toast('FAILED: ' + e.message, 'err');
-        });
+    // If editing, delete old then add new
+    if (EDIT_ROW) {
+        toast('UPDATING...');
+        fetch(API + '?action=del&r=' + EDIT_ROW)
+            .then(function(r) { return r.text(); })
+            .then(function() {
+                return fetch(API + '?action=add&d=' + encodeURIComponent(JSON.stringify(data)));
+            })
+            .then(function(r) { return r.text(); })
+            .then(function(text) {
+                var resp;
+                try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
+                if (resp.error) throw new Error(resp.error);
+                hf();
+                toast('UPDATED', 'ok');
+                load();
+            })
+            .catch(function(e) {
+                toast('FAILED', 'err');
+            });
+    } else {
+        toast('SAVING...');
+        fetch(API + '?action=add&d=' + encodeURIComponent(JSON.stringify(data)))
+            .then(function(r) { return r.text(); })
+            .then(function(text) {
+                var resp;
+                try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
+                if (resp.error) throw new Error(resp.error);
+                hf();
+                toast('ADDED', 'ok');
+                load();
+            })
+            .catch(function(e) {
+                toast('FAILED', 'err');
+            });
+    }
 }
 
-function del(row) {
-    if (!confirm('DELETE THIS TRANSACTION?')) return;
+// Show delete confirmation
+function delTx(row, desc, amt) {
+    DEL_ROW = row;
+    $('delText').innerHTML = 'Delete <strong>' + (desc || 'this transaction').toUpperCase() + '</strong> ($' + Math.abs(amt).toFixed(2) + ')?';
+    $('delModal').classList.add('show');
+}
+
+// Hide delete modal
+function hdm() {
+    DEL_ROW = null;
+    $('delModal').classList.remove('show');
+}
+
+// Confirm delete
+function confirmDel() {
+    if (!DEL_ROW) return;
+    var row = DEL_ROW;
+    hdm();
     toast('DELETING...');
 
     fetch(API + '?action=del&r=' + row)
         .then(function(r) { return r.text(); })
         .then(function(text) {
             var resp;
-            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
+            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
             if (resp.error) throw new Error(resp.error);
             toast('DELETED', 'ok');
             load();
@@ -445,7 +541,6 @@ function savSettings() {
     var u2 = $('n2').value.trim() || 'Partner';
 
     if (!API) return toast('ENTER API URL', 'err');
-
     toast('SAVING...');
 
     fetch(API + '?action=users&d=' + encodeURIComponent(JSON.stringify({user1: u1, user2: u2})))
