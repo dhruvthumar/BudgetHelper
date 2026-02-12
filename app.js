@@ -1,11 +1,12 @@
 var API = window.BUDGET_API || localStorage.getItem('budgetApi') || '';
-var PWD = localStorage.getItem('budgetPwd') || ''; // Store password locally
+var PWD = localStorage.getItem('budgetPwd') || '';
 var D = null;
 var V = localStorage.getItem('bv') || 'household';
 var FU = 'user1';
 var mainChart = null;
 var EDIT_ROW = null;
 var DEL_ROW = null;
+var DEL_INFO = null; // Store delete info
 var logoClickCount = 0;
 var logoClickTimer = null;
 var $ = function(id) { return document.getElementById(id); };
@@ -456,11 +457,10 @@ function drawChart() {
         });
     }
 }
-
+// Modified saveTx function with better password handling
 function saveTx(e) {
     e.preventDefault();
     if (!API) return toast('NOT CONNECTED', 'err');
-    if (!PWD) return promptPassword(function() { saveTx(e); });
     if (!D || !D.u) return toast('NOT LOADED', 'err');
 
     var user = FU === 'user1' ? D.u.user1 : D.u.user2;
@@ -477,141 +477,256 @@ function saveTx(e) {
         return toast('FILL ALL FIELDS', 'err');
     }
 
+    // Check password
+    if (!PWD) {
+        var pwd = prompt('Enter password to save:');
+        if (!pwd) {
+            toast('CANCELLED', '');
+            return;
+        }
+        PWD = pwd;
+        localStorage.setItem('budgetPwd', pwd);
+    }
+
     if (EDIT_ROW) {
+        // Edit mode - delete old and add new
         toast('UPDATING...');
-        fetch(API + '?action=del&pwd=' + PWD + '&r=' + EDIT_ROW)
+        
+        fetch(API + '?action=del&pwd=' + encodeURIComponent(PWD) + '&r=' + EDIT_ROW)
             .then(function(r) { return r.text(); })
             .then(function(text) {
-                // Check for unauthorized
                 var resp;
-                try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
-                if (resp.error === 'Unauthorized') {
-                    PWD = '';
-                    localStorage.removeItem('budgetPwd');
-                    toast('WRONG PASSWORD', 'err');
-                    return promptPassword(function() { saveTx(e); });
+                try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
+                
+                if (resp.error) {
+                    if (resp.error === 'Unauthorized') {
+                        PWD = '';
+                        localStorage.removeItem('budgetPwd');
+                        toast('WRONG PASSWORD', 'err');
+                        return;
+                    }
+                    throw new Error(resp.error);
                 }
-                return fetch(API + '?action=add&pwd=' + PWD + '&d=' + encodeURIComponent(JSON.stringify(data)));
+                
+                // Now add the new transaction
+                return fetch(API + '?action=add&pwd=' + encodeURIComponent(PWD) + '&d=' + encodeURIComponent(JSON.stringify(data)));
             })
             .then(function(r) { return r.text(); })
             .then(function(text) {
                 var resp;
-                try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
+                try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
                 if (resp.error) throw new Error(resp.error);
+                
                 hf();
                 toast('UPDATED', 'ok');
                 load();
             })
             .catch(function(e) {
-                toast('FAILED', 'err');
+                console.error('Update error:', e);
+                toast('UPDATE FAILED', 'err');
             });
     } else {
+        // Add new transaction
         toast('SAVING...');
-        fetch(API + '?action=add&pwd=' + PWD + '&d=' + encodeURIComponent(JSON.stringify(data)))
+        
+        fetch(API + '?action=add&pwd=' + encodeURIComponent(PWD) + '&d=' + encodeURIComponent(JSON.stringify(data)))
             .then(function(r) { return r.text(); })
             .then(function(text) {
                 var resp;
-                try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
-                if (resp.error === 'Unauthorized') {
-                    PWD = '';
-                    localStorage.removeItem('budgetPwd');
-                    toast('WRONG PASSWORD', 'err');
-                    return promptPassword(function() { saveTx(e); });
+                try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
+                
+                if (resp.error) {
+                    if (resp.error === 'Unauthorized') {
+                        PWD = '';
+                        localStorage.removeItem('budgetPwd');
+                        toast('WRONG PASSWORD', 'err');
+                        return;
+                    }
+                    throw new Error(resp.error);
                 }
-                if (resp.error) throw new Error(resp.error);
+                
                 hf();
                 toast('ADDED', 'ok');
                 load();
             })
             .catch(function(e) {
-                toast('FAILED', 'err');
+                console.error('Add error:', e);
+                toast('ADD FAILED', 'err');
             });
     }
 }
+// Modified delTx function - store info and open modal
+function delTx(row, desc, amt) {
+    DEL_ROW = row;
+    DEL_INFO = {row: row, desc: desc, amt: amt};
+    $('delText').innerHTML = 'Delete <strong>' + (desc || 'this transaction').toUpperCase() + '</strong> ($' + Math.abs(amt).toFixed(2) + ')?';
+    $('delModal').classList.add('show');
+}
 
-// Modified confirmDel function
+// Modified hdm function - clear delete info
+function hdm() {
+    DEL_ROW = null;
+    DEL_INFO = null;
+    $('delModal').classList.remove('show');
+}
+
+// Modified confirmDel function with proper password handling
 function confirmDel() {
     if (!DEL_ROW) return;
-    if (!PWD) return promptPassword(confirmDel);
     
+    // Close the delete modal first
     var row = DEL_ROW;
     hdm();
-    toast('DELETING...');
+    
+    // Check if we have password
+    if (!PWD) {
+        promptPasswordForDelete(row);
+        return;
+    }
+    
+    // Proceed with deletion
+    performDelete(row);
+}
 
-    fetch(API + '?action=del&pwd=' + PWD + '&r=' + row)
-        .then(function(r) { return r.text(); })
+// New function specifically for password prompt before delete
+function promptPasswordForDelete(row) {
+    var pwd = prompt('Enter password to delete:');
+    if (!pwd) {
+        toast('CANCELLED', '');
+        return;
+    }
+    
+    PWD = pwd;
+    localStorage.setItem('budgetPwd', pwd);
+    performDelete(row);
+}
+
+// New function to actually perform the deletion
+function performDelete(row) {
+    if (!row || !API) return;
+    
+    toast('DELETING...');
+    
+    var url = API + '?action=del&pwd=' + encodeURIComponent(PWD) + '&r=' + row;
+    
+    fetch(url)
+        .then(function(r) { 
+            if (!r.ok) throw new Error('Network error');
+            return r.text(); 
+        })
         .then(function(text) {
             var resp;
-            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
-            if (resp.error === 'Unauthorized') {
-                PWD = '';
-                localStorage.removeItem('budgetPwd');
-                toast('WRONG PASSWORD', 'err');
-                return promptPassword(confirmDel);
+            try { 
+                resp = JSON.parse(text); 
+            } catch(e) { 
+                throw new Error('Invalid response'); 
             }
-            if (resp.error) throw new Error(resp.error);
+            
+            if (resp.error) {
+                if (resp.error === 'Unauthorized') {
+                    PWD = '';
+                    localStorage.removeItem('budgetPwd');
+                    toast('WRONG PASSWORD', 'err');
+                    // Try again with new password
+                    promptPasswordForDelete(row);
+                    return;
+                }
+                throw new Error(resp.error);
+            }
+            
             toast('DELETED', 'ok');
-            load();
+            load(); // Reload data
         })
         .catch(function(e) {
-            toast('FAILED', 'err');
+            console.error('Delete error:', e);
+            toast('DELETE FAILED', 'err');
         });
 }
 
-// Modified addCategory function
+// Modified addCategory with better password handling
 function addCategory() {
     var name = $('newCat').value.trim();
     if (!name) return toast('ENTER NAME', 'err');
     if (!API) return toast('NOT CONNECTED', 'err');
-    if (!PWD) return promptPassword(addCategory);
+
+    if (!PWD) {
+        var pwd = prompt('Enter password to add category:');
+        if (!pwd) {
+            toast('CANCELLED', '');
+            return;
+        }
+        PWD = pwd;
+        localStorage.setItem('budgetPwd', pwd);
+    }
 
     toast('ADDING...');
-    fetch(API + '?action=addCat&pwd=' + PWD + '&name=' + encodeURIComponent(name))
+    
+    fetch(API + '?action=addCat&pwd=' + encodeURIComponent(PWD) + '&name=' + encodeURIComponent(name))
         .then(function(r) { return r.text(); })
         .then(function(text) {
             var resp;
-            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
-            if (resp.error === 'Unauthorized') {
-                PWD = '';
-                localStorage.removeItem('budgetPwd');
-                toast('WRONG PASSWORD', 'err');
-                return promptPassword(addCategory);
+            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
+            
+            if (resp.error) {
+                if (resp.error === 'Unauthorized') {
+                    PWD = '';
+                    localStorage.removeItem('budgetPwd');
+                    toast('WRONG PASSWORD', 'err');
+                    return;
+                }
+                throw new Error(resp.error);
             }
-            if (resp.error) throw new Error(resp.error);
+            
             $('newCat').value = '';
-            toast('ADDED', 'ok');
+            toast('CATEGORY ADDED', 'ok');
             load();
             setTimeout(renderCategories, 500);
         })
         .catch(function(e) {
+            console.error('Add category error:', e);
             toast('FAILED', 'err');
         });
 }
 
-// Modified delCategory function  
+// Modified delCategory with better password handling
 function delCategory(name) {
     if (!confirm('Delete category "' + name.toUpperCase() + '"?')) return;
     if (!API) return toast('NOT CONNECTED', 'err');
-    if (!PWD) return promptPassword(function() { delCategory(name); });
+
+    if (!PWD) {
+        var pwd = prompt('Enter password to delete category:');
+        if (!pwd) {
+            toast('CANCELLED', '');
+            return;
+        }
+        PWD = pwd;
+        localStorage.setItem('budgetPwd', pwd);
+    }
 
     toast('DELETING...');
-    fetch(API + '?action=delCat&pwd=' + PWD + '&name=' + encodeURIComponent(name))
+    
+    fetch(API + '?action=delCat&pwd=' + encodeURIComponent(PWD) + '&name=' + encodeURIComponent(name))
         .then(function(r) { return r.text(); })
         .then(function(text) {
             var resp;
-            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
-            if (resp.error === 'Unauthorized') {
-                PWD = '';
-                localStorage.removeItem('budgetPwd');
-                toast('WRONG PASSWORD', 'err');
-                return promptPassword(function() { delCategory(name); });
+            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
+            
+            if (resp.error) {
+                if (resp.error === 'Unauthorized') {
+                    PWD = '';
+                    localStorage.removeItem('budgetPwd');
+                    toast('WRONG PASSWORD', 'err');
+                    return;
+                }
+                throw new Error(resp.error);
             }
-            if (resp.error) throw new Error(resp.error);
-            toast('DELETED', 'ok');
+            
+            toast('CATEGORY DELETED', 'ok');
             load();
             setTimeout(renderCategories, 500);
         })
         .catch(function(e) {
+            console.error('Delete category error:', e);
             toast('FAILED', 'err');
         });
 }
@@ -658,11 +773,39 @@ function promptPassword(callback) {
     }
 }
 
-// Add "Lock" button to settings to clear password
+
+// Add function to clear saved password
 function clearPassword() {
     PWD = '';
     localStorage.removeItem('budgetPwd');
     toast('PASSWORD CLEARED', 'ok');
+}
+
+// Add a function to check if password works (optional)
+function testPassword() {
+    if (!PWD) {
+        toast('NO PASSWORD SET', '');
+        return;
+    }
+    
+    // Test with a dummy request
+    fetch(API + '?action=test&pwd=' + encodeURIComponent(PWD))
+        .then(function(r) { return r.text(); })
+        .then(function(text) {
+            var resp;
+            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad response'); }
+            
+            if (resp.error === 'Unauthorized') {
+                toast('WRONG PASSWORD', 'err');
+                PWD = '';
+                localStorage.removeItem('budgetPwd');
+            } else {
+                toast('PASSWORD OK', 'ok');
+            }
+        })
+        .catch(function(e) {
+            console.error('Test error:', e);
+        });
 }
 
 function toast(msg, type) {
