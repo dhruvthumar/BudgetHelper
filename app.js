@@ -2,12 +2,13 @@ var API = window.BUDGET_API || localStorage.getItem('budgetApi') || '';
 var D = null;
 var V = localStorage.getItem('bv') || 'household';
 var FU = 'user1';
-var cC = null, dC = null;
+var mainChart = null;
 var EDIT_ROW = null;
 var DEL_ROW = null;
+var logoClickCount = 0;
+var logoClickTimer = null;
 var $ = function(id) { return document.getElementById(id); };
 
-// Color palette
 var COLORS = {
     cream: '#FBF5DD',
     sage: '#A6CDC6',
@@ -52,6 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
     $('moX').onclick = hm;
     $('moBg').onclick = hm;
     $('savS').onclick = savSettings;
+    $('addCatBtn').onclick = addCategory;
+    $('newCat').onkeypress = function(e) { if (e.key === 'Enter') { e.preventDefault(); addCategory(); } };
 
     // Delete modal
     $('delX').onclick = hdm;
@@ -59,17 +62,46 @@ document.addEventListener('DOMContentLoaded', function() {
     $('delNo').onclick = hdm;
     $('delYes').onclick = confirmDel;
 
+    // Setup modal
+    $('setupSave').onclick = saveSetup;
+
+    // Secret: Triple-click logo to change API
+    $('logoBtn').onclick = function() {
+        logoClickCount++;
+        if (logoClickTimer) clearTimeout(logoClickTimer);
+        logoClickTimer = setTimeout(function() { logoClickCount = 0; }, 500);
+        if (logoClickCount >= 3) {
+            logoClickCount = 0;
+            showSetup();
+        }
+    };
+
     $('mo').onchange = load;
 
     sv(V);
 
+    // Check if API is set
     if (!API) {
-        sm();
-        toast('SET API URL', 'err');
+        showSetup();
     } else {
         load();
     }
 });
+
+function showSetup() {
+    $('setupApi').value = API;
+    $('setupModal').classList.add('show');
+}
+
+function saveSetup() {
+    var url = $('setupApi').value.trim();
+    if (!url) return toast('ENTER URL', 'err');
+    API = url;
+    localStorage.setItem('budgetApi', url);
+    $('setupModal').classList.remove('show');
+    toast('CONNECTED', 'ok');
+    load();
+}
 
 function sv(v) {
     V = v;
@@ -83,14 +115,12 @@ function sv(v) {
     });
 
     $('addBtn').textContent = '+ ADD TRANSACTION';
-    $('balCard').style.display = v === 'household' ? 'none' : '';
-    $('cmpView').className = 'cmp' + (v === 'household' ? ' show' : '');
 
     if (D && D.u && v !== 'household') {
         var name = v === 'user1' ? D.u.user1 : D.u.user2;
-        $('balTag').textContent = name.toUpperCase();
+        $('overviewTag').textContent = name.toUpperCase();
     } else {
-        $('balTag').textContent = 'BALANCE';
+        $('overviewTag').textContent = 'OVERVIEW';
     }
 
     if (v !== 'household') sfu(v);
@@ -118,7 +148,7 @@ function names() {
 
     if (V !== 'household') {
         var name = V === 'user1' ? D.u.user1 : D.u.user2;
-        $('balTag').textContent = name.toUpperCase();
+        $('overviewTag').textContent = name.toUpperCase();
     }
 }
 
@@ -210,42 +240,22 @@ function draw() {
     if (!D || !D.s) return;
     var s = D.s;
     var u = D.u || {user1: 'Me', user2: 'Partner'};
-    var vs;
 
-    if (V === 'user1') vs = s.u1;
-    else if (V === 'user2') vs = s.u2;
-    else vs = s.h;
-    if (!vs) return;
+    // Build overview
+    var html = '';
 
-    $('bal').textContent = '$' + (vs.bl || 0).toFixed(2);
-    $('inc').textContent = '+$' + (vs.i || 0).toFixed(2);
-    $('exp').textContent = '-$' + (vs.e || 0).toFixed(2);
-
-    if (V === 'user1') {
-        $('incP').textContent = (s.u1.ip || 0) + '% OF HOUSEHOLD';
-        $('expP').textContent = (s.u1.ep || 0) + '% OF HOUSEHOLD';
-    } else if (V === 'user2') {
-        $('incP').textContent = (s.u2.ip || 0) + '% OF HOUSEHOLD';
-        $('expP').textContent = (s.u2.ep || 0) + '% OF HOUSEHOLD';
+    if (V === 'household') {
+        // Show both users
+        html += buildUserSection(u.user1, s.u1, true);
+        html += buildUserSection(u.user2, s.u2, false);
+    } else {
+        // Show single user
+        var vs = V === 'user1' ? s.u1 : s.u2;
+        var name = V === 'user1' ? u.user1 : u.user2;
+        html += buildUserSection(name, vs, V === 'user1', true);
     }
 
-    // Comparison
-    var i1 = s.u1.ip || 0, i2 = s.u2.ip || 0;
-    var e1 = s.u1.ep || 0, e2 = s.u2.ep || 0;
-
-    $('ib1').style.width = (i1 || 50) + '%'; $('ib1').textContent = i1 + '%';
-    $('ib2').style.width = (i2 || 50) + '%'; $('ib2').textContent = i2 + '%';
-    $('iv1').textContent = u.user1.toUpperCase() + ': $' + (s.u1.i || 0).toFixed(0);
-    $('iv2').textContent = u.user2.toUpperCase() + ': $' + (s.u2.i || 0).toFixed(0);
-
-    $('eb1').style.width = (e1 || 50) + '%'; $('eb1').textContent = e1 + '%';
-    $('eb2').style.width = (e2 || 50) + '%'; $('eb2').textContent = e2 + '%';
-    $('ev1').textContent = u.user1.toUpperCase() + ': $' + (s.u1.e || 0).toFixed(0);
-    $('ev2').textContent = u.user2.toUpperCase() + ': $' + (s.u2.e || 0).toFixed(0);
-
-    $('hi').textContent = '$' + (s.h.i || 0).toFixed(2);
-    $('he').textContent = '$' + (s.h.e || 0).toFixed(2);
-    $('hb').textContent = '$' + (s.h.bl || 0).toFixed(2);
+    $('overviewInner').innerHTML = html;
 
     // Categories dropdown
     if (D.cats) {
@@ -254,22 +264,6 @@ function draw() {
                 return '<option value="' + c.n + '">' + c.n.toUpperCase() + '</option>';
             }).join('');
     }
-
-    // Budgets
-    var cs = vs.cs || {};
-    var bh = '';
-    var has = false;
-    for (var cat in cs) {
-        has = true;
-        var d = cs[cat];
-        var spent = d.s || 0;
-        var budget = d.b || 0;
-        var p = budget > 0 ? Math.min(spent / budget * 100, 100) : 0;
-        var cl = p > 75 ? ' w' : '';
-        if (p > 90) cl = ' o';
-        bh += '<div class="bi"><div class="bh"><span>' + cat.toUpperCase() + '</span><span>$' + spent.toFixed(0) + ' / $' + budget + '</span></div><div class="bb"><div class="bf' + cl + '" style="width:' + p + '%"></div></div></div>';
-    }
-    $('bud').innerHTML = has ? bh : '<div class="empty">NO BUDGETS SET</div>';
 
     // Transactions
     var month = parseInt($('mo').value);
@@ -320,142 +314,151 @@ function draw() {
         $('txs').innerHTML = h;
     }
 
-    doCharts(vs);
-
-    if (D.cats) {
-        $('catL').innerHTML = D.cats.map(function(c) {
-            return '<div class="ci"><span>' + c.n.toUpperCase() + '</span><input type="number" value="' + c.b + '" onchange="ubud(\'' + c.n + '\',this.value)"></div>';
-        }).join('');
-    }
+    drawChart();
 }
 
-function doCharts(vs) {
-    // Destroy old charts
-    try { if (cC) { cC.destroy(); cC = null; } } catch(e) {}
-    try { if (dC) { dC.destroy(); dC = null; } } catch(e) {}
+function buildUserSection(name, stats, isU1, single) {
+    var income = stats.i || 0;
+    var expense = stats.e || 0;
+    var balance = stats.bl || 0;
+    var spendPct = income > 0 ? Math.min((expense / income) * 100, 100) : 0;
 
-    // Reset canvas elements
-    $('catChartWrap').innerHTML = '<canvas id="cC"></canvas>';
-    $('dayChartWrap').innerHTML = '<canvas id="dC"></canvas>';
+    return '<div class="user-section' + (single ? ' single' : '') + '">' +
+        '<div class="user-header">' +
+            '<div class="user-name"><div class="user-dot ' + (isU1 ? 'u1' : 'u2') + '"></div>' + name.toUpperCase() + '</div>' +
+            '<div class="user-balance ' + (balance >= 0 ? 'positive' : 'negative') + '">$' + balance.toFixed(2) + '</div>' +
+        '</div>' +
+        '<div class="user-stats">' +
+            '<div class="stat-box"><div class="stat-label">EARNED</div><div class="stat-value income">+$' + income.toFixed(2) + '</div></div>' +
+            '<div class="stat-box"><div class="stat-label">SPENT</div><div class="stat-value expense">-$' + expense.toFixed(2) + '</div></div>' +
+        '</div>' +
+        '<div class="spend-bar"><div class="spend-fill" style="width:' + spendPct + '%"></div></div>' +
+        '<div class="spend-text">' + spendPct.toFixed(0) + '% OF INCOME SPENT</div>' +
+    '</div>';
+}
 
-    var cs = vs.cs || {};
-    var ds = vs.ds || {};
+function drawChart() {
+    if (!D || !D.s) return;
 
-    // Prepare category data
-    var cd = [];
-    for (var k in cs) {
-        if (cs[k].s > 0) {
-            cd.push({name: k, value: cs[k].s});
-        }
-    }
+    try { if (mainChart) { mainChart.destroy(); mainChart = null; } } catch(e) {}
+    $('chartWrap').innerHTML = '<canvas id="mainChart"></canvas>';
 
-    // Prepare daily data
-    var dd = [];
-    for (var k in ds) {
-        dd.push({day: parseInt(k), value: ds[k]});
-    }
-    dd.sort(function(a, b) { return a.day - b.day; });
+    var u = D.u || {user1: 'Me', user2: 'Partner'};
+    var s = D.s;
 
-    // 4 color palette for charts
-    var chartColors = [COLORS.dark, COLORS.gold, COLORS.sage, COLORS.cream];
+    var labels, incomeData, expenseData;
 
-    // Category Chart (Doughnut)
-    if (cd.length > 0) {
-        var ctx1 = $('cC');
-        if (ctx1) {
-            cC = new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    labels: cd.map(function(x) { return x.name.toUpperCase(); }),
-                    datasets: [{
-                        data: cd.map(function(x) { return x.value; }),
-                        backgroundColor: cd.map(function(x, i) {
-                            return chartColors[i % chartColors.length];
-                        }),
-                        borderWidth: 3,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    cutout: '50%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                boxHeight: 12,
-                                font: { size: 10, weight: 'bold' },
-                                padding: 8,
-                                color: COLORS.dark
-                            }
-                        }
-                    }
-                }
-            });
-        }
+    if (V === 'household') {
+        labels = [u.user1.toUpperCase(), u.user2.toUpperCase()];
+        incomeData = [s.u1.i || 0, s.u2.i || 0];
+        expenseData = [s.u1.e || 0, s.u2.e || 0];
     } else {
-        $('catChartWrap').innerHTML = '<div class="empty">NO SPENDING DATA</div>';
+        var vs = V === 'user1' ? s.u1 : s.u2;
+        var name = V === 'user1' ? u.user1 : u.user2;
+        labels = ['INCOME', 'EXPENSES'];
+        incomeData = [vs.i || 0];
+        expenseData = [vs.e || 0];
     }
 
-    // Daily Chart (Bar)
-    if (dd.length > 0) {
-        var ctx2 = $('dC');
-        if (ctx2) {
-            dC = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: dd.map(function(x) { return x.day; }),
-                    datasets: [{
-                        data: dd.map(function(x) { return x.value; }),
+    var ctx = $('mainChart');
+    if (!ctx) return;
+
+    if (V === 'household') {
+        // Grouped bar chart for household
+        mainChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'INCOME',
+                        data: incomeData,
+                        backgroundColor: COLORS.dark,
+                        borderColor: COLORS.dark,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'EXPENSES',
+                        data: expenseData,
                         backgroundColor: COLORS.gold,
                         borderColor: COLORS.dark,
                         borderWidth: 2
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(v) { return '$' + v; },
-                                font: { size: 10, weight: 'bold' },
-                                color: COLORS.dark
-                            },
-                            grid: {
-                                color: COLORS.sage,
-                                lineWidth: 1
-                            },
-                            border: {
-                                color: COLORS.dark,
-                                width: 2
-                            }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: {
-                                font: { size: 10, weight: 'bold' },
-                                color: COLORS.dark
-                            },
-                            border: {
-                                color: COLORS.dark,
-                                width: 2
-                            }
+                    }
+                ]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: { size: 10, weight: 'bold' },
+                            color: COLORS.dark,
+                            padding: 16
                         }
                     }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(v) { return '$' + v; },
+                            font: { size: 10, weight: 'bold' },
+                            color: COLORS.dark
+                        },
+                        grid: { color: COLORS.sage },
+                        border: { color: COLORS.dark, width: 2 }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11, weight: 'bold' }, color: COLORS.dark },
+                        border: { color: COLORS.dark, width: 2 }
+                    }
                 }
-            });
-        }
+            }
+        });
     } else {
-        $('dayChartWrap').innerHTML = '<div class="empty">NO DAILY DATA</div>';
+        // Simple horizontal bar for single user
+        var vs = V === 'user1' ? s.u1 : s.u2;
+        mainChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['INCOME', 'EXPENSES'],
+                datasets: [{
+                    data: [vs.i || 0, vs.e || 0],
+                    backgroundColor: [COLORS.dark, COLORS.gold],
+                    borderColor: COLORS.dark,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(v) { return '$' + v; },
+                            font: { size: 10, weight: 'bold' },
+                            color: COLORS.dark
+                        },
+                        grid: { color: COLORS.sage },
+                        border: { color: COLORS.dark, width: 2 }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11, weight: 'bold' }, color: COLORS.dark },
+                        border: { color: COLORS.dark, width: 2 }
+                    }
+                }
+            }
+        });
     }
 }
 
 function saveTx(e) {
     e.preventDefault();
-    if (!API) return toast('SET API URL', 'err');
+    if (!API) return toast('NOT CONNECTED', 'err');
     if (!D || !D.u) return toast('NOT LOADED', 'err');
 
     var user = FU === 'user1' ? D.u.user1 : D.u.user2;
@@ -540,38 +543,77 @@ function confirmDel() {
         });
 }
 
-function ubud(cat, b) {
-    fetch(API + '?action=budget&d=' + encodeURIComponent(JSON.stringify({cat: cat, b: parseFloat(b)})))
+// Settings
+function sm() {
+    $('modal').classList.add('show');
+    if (D && D.u) {
+        $('n1').value = D.u.user1 || '';
+        $('n2').value = D.u.user2 || '';
+    }
+    renderCategories();
+}
+
+function hm() { $('modal').classList.remove('show'); }
+
+function renderCategories() {
+    var cats = (D && D.cats) ? D.cats : [];
+    if (cats.length === 0) {
+        $('catList').innerHTML = '<div class="empty" style="padding:20px">NO CATEGORIES</div>';
+        return;
+    }
+    $('catList').innerHTML = cats.map(function(c) {
+        return '<div class="cat-item"><span>' + c.n.toUpperCase() + '</span><button class="cat-del" onclick="delCategory(\'' + c.n.replace(/'/g, "\\'") + '\')">×</button></div>';
+    }).join('');
+}
+
+function addCategory() {
+    var name = $('newCat').value.trim();
+    if (!name) return toast('ENTER NAME', 'err');
+    if (!API) return toast('NOT CONNECTED', 'err');
+
+    toast('ADDING...');
+    fetch(API + '?action=addCat&name=' + encodeURIComponent(name))
         .then(function(r) { return r.text(); })
         .then(function(text) {
             var resp;
             try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
             if (resp.error) throw new Error(resp.error);
-            toast('UPDATED', 'ok');
+            $('newCat').value = '';
+            toast('ADDED', 'ok');
             load();
+            setTimeout(renderCategories, 500);
         })
-        .catch(function() { toast('FAILED', 'err'); });
+        .catch(function(e) {
+            toast('FAILED', 'err');
+        });
 }
 
-function sm() {
-    $('modal').classList.add('show');
-    $('apiI').value = API;
-    if (D && D.u) {
-        $('n1').value = D.u.user1 || '';
-        $('n2').value = D.u.user2 || '';
-    }
-}
+function delCategory(name) {
+    if (!confirm('Delete category "' + name.toUpperCase() + '"?')) return;
+    if (!API) return toast('NOT CONNECTED', 'err');
 
-function hm() { $('modal').classList.remove('show'); }
+    toast('DELETING...');
+    fetch(API + '?action=delCat&name=' + encodeURIComponent(name))
+        .then(function(r) { return r.text(); })
+        .then(function(text) {
+            var resp;
+            try { resp = JSON.parse(text); } catch(e) { throw new Error('Bad'); }
+            if (resp.error) throw new Error(resp.error);
+            toast('DELETED', 'ok');
+            load();
+            setTimeout(renderCategories, 500);
+        })
+        .catch(function(e) {
+            toast('FAILED', 'err');
+        });
+}
 
 function savSettings() {
-    var url = $('apiI').value.trim();
-    if (url) { API = url; localStorage.setItem('budgetApi', url); }
+    if (!API) return toast('NOT CONNECTED', 'err');
 
     var u1 = $('n1').value.trim() || 'Me';
     var u2 = $('n2').value.trim() || 'Partner';
 
-    if (!API) return toast('ENTER API URL', 'err');
     toast('SAVING...');
 
     fetch(API + '?action=users&d=' + encodeURIComponent(JSON.stringify({user1: u1, user2: u2})))

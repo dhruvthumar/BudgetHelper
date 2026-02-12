@@ -24,7 +24,7 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 /* NAV */
 .n{background:var(--t);padding:0;position:sticky;top:0;z-index:50;border-bottom:4px solid var(--accent)}
 .ni{max-width:700px;margin:0 auto;display:flex;align-items:stretch;justify-content:space-between}
-.logo{font-weight:700;font-size:18px;color:var(--accent);padding:14px 16px;text-transform:uppercase;letter-spacing:.15em;border-right:2px solid rgba(255,255,255,.1)}
+.logo{font-weight:700;font-size:18px;color:var(--accent);padding:14px 16px;text-transform:uppercase;letter-spacing:.15em;border-right:2px solid rgba(255,255,255,.1);cursor:pointer}
 .tabs{display:flex;flex:1}
 .tab{padding:14px 16px;background:transparent;border:none;border-right:2px solid rgba(255,255,255,.1);cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);transition:all .1s;flex:1;text-align:center}
 .tab:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.7)}
@@ -38,39 +38,34 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 /* MAIN */
 .m{max-width:700px;margin:0 auto;padding:16px}
 
-/* BALANCE */
-.bal{background:var(--c);border:3px solid var(--t);padding:0;margin-bottom:16px;position:relative}
-.bal-tag{position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em;text-transform:uppercase}
-.bal-v{font-size:48px;font-weight:700;padding:40px 20px 16px;border-bottom:3px solid var(--t);letter-spacing:-.02em}
-.bal-r{display:flex}
-.bal-i{flex:1;padding:14px 20px;text-align:left}
-.bal-i:first-child{border-right:3px solid var(--t)}
-.bal-i .l{font-size:10px;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:var(--t3);margin-bottom:4px;display:block}
-.bal-i .v{font-size:22px;font-weight:700}
-.v-in{color:var(--t)}
-.v-ex{color:var(--accent)}
-.bal-p{font-size:11px;color:var(--t3);margin-top:4px;font-weight:400}
+/* OVERVIEW CARD */
+.overview{background:var(--c);border:3px solid var(--t);margin-bottom:16px;position:relative}
+.overview-tag{position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em;text-transform:uppercase}
+.overview-inner{padding:36px 16px 16px}
+.user-section{margin-bottom:20px;padding-bottom:20px;border-bottom:2px solid var(--bg)}
+.user-section:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.user-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.user-name{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.user-dot{width:12px;height:12px;border:2px solid var(--t)}
+.user-dot.u1{background:var(--t)}
+.user-dot.u2{background:var(--mid)}
+.user-balance{font-size:20px;font-weight:700}
+.user-balance.positive{color:var(--t)}
+.user-balance.negative{color:var(--accent)}
+.user-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.stat-box{padding:12px;background:var(--bg);border:2px solid var(--t)}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:4px}
+.stat-value{font-size:18px;font-weight:700}
+.stat-value.income{color:var(--t)}
+.stat-value.expense{color:var(--accent)}
+.spend-bar{height:12px;background:var(--bg);border:2px solid var(--t);overflow:hidden}
+.spend-fill{height:100%;background:var(--accent);transition:width .4s}
+.spend-text{font-size:11px;color:var(--t3);margin-top:6px;text-align:right}
 
-/* COMPARISON */
-.cmp{background:var(--c);border:3px solid var(--t);margin-bottom:16px;display:none;position:relative}
-.cmp.show{display:block}
-.cmp-tag{position:absolute;top:-1px;left:-1px;background:var(--t);color:var(--accent);font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:.15em;text-transform:uppercase}
-.cmp-inner{padding:36px 16px 16px}
-.cmp-row{margin-bottom:16px}
-.cmp-row:last-of-type{margin-bottom:0}
-.cmp-rl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--t);margin-bottom:6px}
-.bar-wrap{height:36px;background:var(--bg);border:2px solid var(--t);display:flex;overflow:hidden}
-.bar-f{height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;min-width:36px;transition:width .4s}
-.bar-f.b1{background:var(--t);color:var(--accent)}
-.bar-f.b2{background:var(--mid);color:var(--t)}
-.cmp-vals{display:flex;justify-content:space-between;font-size:11px;margin-top:6px;font-weight:700}
-.cmp-vals span:first-child{color:var(--t)}
-.cmp-vals span:last-child{color:var(--t)}
-.cmp-totals{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:3px solid var(--t);margin-top:0}
-.cmp-totals>div{padding:14px 12px;text-align:left}
-.cmp-totals>div:not(:last-child){border-right:3px solid var(--t)}
-.cmp-totals .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)}
-.cmp-totals .v{font-size:20px;font-weight:700;margin-top:4px}
+/* CHART SECTION */
+.chart-sec{background:var(--c);border:3px solid var(--t);margin-bottom:16px;position:relative}
+.chart-sec .st{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;background:var(--t);color:var(--accent);padding:6px 12px;display:inline-block;position:absolute;top:-1px;left:-1px}
+.chart-wrap{padding:40px 16px 16px;height:220px}
 
 /* ADD BUTTON */
 .add{margin-bottom:16px}
@@ -101,31 +96,13 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .bd{background:var(--t);color:var(--accent);flex:1}
 .bd:hover{background:var(--accent);color:var(--t)}
 
-/* SECTION */
+/* TRANSACTIONS SECTION */
 .sec{background:var(--c);border:3px solid var(--t);margin-bottom:16px;position:relative}
 .st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;background:var(--t);color:var(--accent);padding:6px 12px;display:inline-block;position:absolute;top:-1px;left:-1px}
-.ch{height:200px;position:relative;padding:40px 12px 12px}
-
-/* CHARTS */
-.cg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-
-/* BUDGETS */
-.bud-inner{padding:40px 12px 12px}
-.bi{padding:12px;border:2px solid var(--t);margin-bottom:8px;background:var(--c)}
-.bi:last-child{margin-bottom:0}
-.bh{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;font-weight:700}
-.bh span:last-child{color:var(--t3);font-weight:400}
-.bb{height:8px;background:var(--bg);border:1px solid var(--t);overflow:hidden}
-.bf{height:100%;background:var(--t);transition:width .3s}
-.bf.w{background:var(--accent)}
-.bf.o{background:var(--accent)}
-
-/* TRANSACTIONS */
 .txs-inner{padding:40px 0 0}
 .ti{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:2px solid var(--t);cursor:pointer;transition:background .1s}
 .ti:last-child{border-bottom:none}
 .ti:hover{background:var(--bg)}
-.ti:active{background:var(--mid)}
 .av{width:36px;height:36px;border:2px solid var(--t);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
 .av.a1{background:var(--t);color:var(--accent)}
 .av.a2{background:var(--mid);color:var(--t)}
@@ -162,6 +139,7 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .mo-f-row{display:flex;gap:8px}
 .mo-f-row .btn{flex:1;padding:14px;text-align:center}
 .sg{margin-bottom:18px}
+.sg:last-child{margin-bottom:0}
 .sl{font-size:11px;font-weight:700;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.1em}
 .si{width:100%;padding:12px;border:2px solid var(--t);font-size:13px;color:var(--t);background:var(--c)}
 .si:focus{outline:none;background:var(--bg);border-color:var(--accent)}
@@ -169,9 +147,16 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .sr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .sr .si:first-child{border-left:4px solid var(--t)}
 .sr .si:last-child{border-left:4px solid var(--mid)}
-.ci{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:2px solid var(--t);margin-bottom:6px;font-size:12px;font-weight:700;text-transform:uppercase}
-.ci input{width:80px;padding:8px;border:2px solid var(--t);font-size:12px;font-weight:700;text-align:right;background:var(--c)}
-.ci input:focus{outline:none;border-color:var(--accent)}
+
+/* CATEGORY MANAGEMENT */
+.cat-list{max-height:200px;overflow-y:auto;border:2px solid var(--t);margin-bottom:12px}
+.cat-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--bg);font-size:12px;font-weight:700;text-transform:uppercase}
+.cat-item:last-child{border-bottom:none}
+.cat-del{background:none;border:none;color:var(--t3);cursor:pointer;font-size:16px;font-weight:700;padding:0 4px;transition:color .1s}
+.cat-del:hover{color:#C43E3E}
+.cat-add{display:flex;gap:8px}
+.cat-add input{flex:1}
+.cat-add button{padding:12px 16px}
 
 /* CONFIRM MODAL */
 .confirm-text{font-size:14px;line-height:1.6;margin-bottom:16px;text-align:center;padding:10px}
@@ -182,21 +167,20 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .toast.ok{background:var(--t);color:var(--accent);border-color:var(--accent)}
 .toast.err{background:var(--accent);color:var(--t);border-color:var(--t)}
 
+/* SETUP MODAL */
+.setup-info{font-size:12px;line-height:1.6;color:var(--t2);margin-bottom:16px;padding:12px;background:var(--bg);border:2px solid var(--t)}
+
 @media(max-width:500px){
-    .cg{grid-template-columns:1fr}
     .fg{grid-template-columns:1fr}
     .fg .fi{border-right:none}
     .fa{grid-column:span 1}
     .tabs{display:none}
     .ni{gap:0}
-    .bal-v{font-size:36px;padding:36px 16px 12px}
     .tab-mobile{display:flex;border:3px solid var(--t);border-top:none;margin-bottom:16px}
     .tab-mobile .tab{border:none;border-right:3px solid var(--t);padding:12px;flex:1}
     .tab-mobile .tab:last-child{border-right:none}
     .tx-actions{flex-direction:column;gap:2px}
-    .td{font-size:13px}
-    .ta{font-size:15px}
-    .tm{font-size:11px}
+    .user-stats{grid-template-columns:1fr}
 }
 @media(min-width:501px){
     .tab-mobile{display:none!important}
@@ -205,7 +189,7 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 </head>
 <body>
 <nav class="n"><div class="ni">
-  <div class="logo">Budget</div>
+  <div class="logo" id="logoBtn">Budget</div>
   <div class="tabs">
     <button class="tab" data-v="user1" id="t1">Me</button>
     <button class="tab" data-v="user2" id="t2">Partner</button>
@@ -224,34 +208,18 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
     <button class="tab on" data-v="household" id="mt3">Both</button>
   </div>
 
-  <div class="bal" id="balCard">
-    <div class="bal-tag" id="balTag">BALANCE</div>
-    <div class="bal-v" id="bal">$0.00</div>
-    <div class="bal-r">
-      <div class="bal-i"><span class="l">Income</span><span class="v v-in" id="inc">+$0</span><div class="bal-p" id="incP"></div></div>
-      <div class="bal-i"><span class="l">Expenses</span><span class="v v-ex" id="exp">-$0</span><div class="bal-p" id="expP"></div></div>
+  <!-- Overview -->
+  <div class="overview" id="overviewCard">
+    <div class="overview-tag" id="overviewTag">OVERVIEW</div>
+    <div class="overview-inner" id="overviewInner">
+      <div class="spin"></div>
     </div>
   </div>
 
-  <div class="cmp" id="cmpView">
-    <div class="cmp-tag">HOUSEHOLD</div>
-    <div class="cmp-inner">
-      <div class="cmp-row">
-        <div class="cmp-rl">Income</div>
-        <div class="bar-wrap"><div class="bar-f b1" id="ib1">0%</div><div class="bar-f b2" id="ib2">0%</div></div>
-        <div class="cmp-vals"><span id="iv1">$0</span><span id="iv2">$0</span></div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-rl">Expenses</div>
-        <div class="bar-wrap"><div class="bar-f b1" id="eb1">0%</div><div class="bar-f b2" id="eb2">0%</div></div>
-        <div class="cmp-vals"><span id="ev1">$0</span><span id="ev2">$0</span></div>
-      </div>
-    </div>
-    <div class="cmp-totals">
-      <div><div class="lbl">Income</div><div class="v" id="hi">$0</div></div>
-      <div><div class="lbl">Expenses</div><div class="v" id="he">$0</div></div>
-      <div><div class="lbl">Balance</div><div class="v" id="hb">$0</div></div>
-    </div>
+  <!-- Simple Chart -->
+  <div class="chart-sec">
+    <div class="st">Monthly Flow</div>
+    <div class="chart-wrap" id="chartWrap"><canvas id="mainChart"></canvas></div>
   </div>
 
   <div class="add"><button class="add-b" id="addBtn">+ ADD TRANSACTION</button></div>
@@ -271,21 +239,11 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
       <select id="fCat" class="fi" required><option value="">CATEGORY</option></select>
       <input type="number" id="fAmt" class="fi" placeholder="0.00" step="0.01" inputmode="decimal" required>
       <select id="fType" class="fi"><option value="Expense">EXPENSE</option><option value="Income">INCOME</option></select>
-      <div class="fa" id="faBtns">
+      <div class="fa">
         <button type="button" class="btn bs" id="fCancel">CANCEL</button>
         <button type="submit" class="btn bp" id="fSave">SAVE</button>
       </div>
     </form>
-  </div>
-
-  <div class="cg">
-    <div class="sec"><div class="st">Categories</div><div class="ch" id="catChartWrap"><canvas id="cC"></canvas></div></div>
-    <div class="sec"><div class="st">Daily</div><div class="ch" id="dayChartWrap"><canvas id="dC"></canvas></div></div>
-  </div>
-
-  <div class="sec">
-    <div class="st">Budgets</div>
-    <div class="bud-inner" id="bud"><div class="spin"></div></div>
   </div>
 
   <div class="sec">
@@ -300,9 +258,21 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
   <div class="mo-b">
     <div class="mo-h"><h2>Settings</h2><button class="mo-x" id="moX">×</button></div>
     <div class="mo-d">
-      <div class="sg"><label class="sl">Script URL</label><input type="text" id="apiI" class="si" placeholder="https://script.google.com/..."><p class="sh">Your deployed Apps Script web app URL</p></div>
-      <div class="sg"><label class="sl">Names</label><div class="sr"><input type="text" id="n1" class="si" placeholder="YOU"><input type="text" id="n2" class="si" placeholder="PARTNER"></div></div>
-      <div class="sg"><label class="sl">Budgets</label><div id="catL"></div></div>
+      <div class="sg">
+        <label class="sl">Names</label>
+        <div class="sr">
+          <input type="text" id="n1" class="si" placeholder="YOU">
+          <input type="text" id="n2" class="si" placeholder="PARTNER">
+        </div>
+      </div>
+      <div class="sg">
+        <label class="sl">Categories</label>
+        <div class="cat-list" id="catList"></div>
+        <div class="cat-add">
+          <input type="text" id="newCat" class="si" placeholder="NEW CATEGORY">
+          <button type="button" class="btn bp" id="addCatBtn">ADD</button>
+        </div>
+      </div>
     </div>
     <div class="mo-f"><button class="btn bp" id="savS">SAVE CHANGES</button></div>
   </div>
@@ -322,6 +292,24 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
         <button class="btn bd" id="delYes">DELETE</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Setup Modal (First Time) -->
+<div class="mo" id="setupModal">
+  <div class="mo-bg"></div>
+  <div class="mo-b">
+    <div class="mo-h"><h2>Setup</h2></div>
+    <div class="mo-d">
+      <div class="setup-info">
+        Enter your Google Apps Script URL to connect your budget spreadsheet.
+      </div>
+      <div class="sg">
+        <label class="sl">Script URL</label>
+        <input type="text" id="setupApi" class="si" placeholder="https://script.google.com/...">
+      </div>
+    </div>
+    <div class="mo-f"><button class="btn bp" id="setupSave">CONNECT</button></div>
   </div>
 </div>
 
