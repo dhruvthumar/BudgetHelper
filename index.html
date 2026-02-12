@@ -22,8 +22,6 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .sel{padding:5px 8px;border:1px solid var(--br);border-radius:6px;background:var(--c);font-size:12px;font-weight:500}
 .ib{width:32px;height:32px;border:1px solid var(--br);border-radius:6px;background:var(--c);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
 .m{max-width:600px;margin:0 auto;padding:12px}
-
-/* Balance */
 .bal{background:var(--c);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
 .bal-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
 .bal-v{font-size:32px;font-weight:700;margin:4px 0 12px}
@@ -33,8 +31,6 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .bal-i .v{font-size:16px;font-weight:600;margin-top:2px}
 .green{color:var(--gn)}.red{color:var(--rd)}
 .bal-p{font-size:11px;color:var(--t2);margin-top:2px}
-
-/* Comparison */
 .cmp{background:var(--c);border-radius:14px;padding:16px;margin-bottom:12px;display:none}
 .cmp.show{display:block}
 .cmp-t{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t2);margin-bottom:12px}
@@ -49,13 +45,9 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .cmp-vals span:last-child{color:var(--pu)}
 .cmp-totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;text-align:center;padding-top:14px;border-top:1px solid var(--br)}
 .cmp-totals .v{font-size:16px;font-weight:600;margin-top:2px}
-
-/* Add */
 .add{display:flex;justify-content:center;margin-bottom:12px}
 .add-b{padding:8px 20px;border:none;border-radius:50px;cursor:pointer;font-weight:600;font-size:13px;color:#fff;background:var(--t)}
 .add-b.u1{background:var(--bl)}.add-b.u2{background:var(--pu)}
-
-/* Form */
 .fm{background:var(--c);border-radius:14px;padding:12px;margin-bottom:12px;display:none}
 .fm.show{display:block}
 .fm-u{display:flex;gap:6px;margin-bottom:10px}
@@ -70,21 +62,15 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px}
 .bp{background:var(--t);color:#fff}
 .bs{background:var(--bg);color:var(--t2)}
-
-/* Section */
 .sec{background:var(--c);border-radius:14px;padding:12px;margin-bottom:12px}
 .st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t2);margin-bottom:10px}
 .ch{height:160px;position:relative}
-
-/* Budget bars */
 .bi{padding:8px;background:var(--bg);border-radius:6px;margin-bottom:6px}
 .bi:last-child{margin-bottom:0}
 .bh{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
 .bb{height:3px;background:var(--br);border-radius:2px;overflow:hidden}
 .bf{height:100%;border-radius:2px;background:var(--t);transition:width .3s}
 .bf.w{background:#ffb700}.bf.o{background:var(--rd)}
-
-/* Transactions */
 .ti{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--br)}
 .ti:last-child{border-bottom:none}
 .av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
@@ -97,16 +83,10 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .ta{font-weight:600;font-size:13px}
 .db{background:none;border:none;color:var(--t3);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1}
 .db:active{color:var(--rd)}
-
-/* Empty / Loading */
 .empty{text-align:center;color:var(--t3);padding:24px;font-size:13px}
 .spin{width:18px;height:18px;border:2px solid var(--br);border-top-color:var(--t);border-radius:50%;animation:sp .5s linear infinite;margin:20px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
-
-/* Charts grid */
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-
-/* Modal */
 .mo{display:none;position:fixed;inset:0;z-index:100}
 .mo.show{display:flex;align-items:flex-start;justify-content:center;padding-top:10vh}
 .mo-bg{position:fixed;inset:0;background:rgba(0,0,0,.4)}
@@ -123,19 +103,9 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 .sr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .ci{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--bg);border-radius:6px;margin-bottom:4px;font-size:12px}
 .ci input{width:70px;padding:4px;border:1px solid var(--br);border-radius:4px;text-align:right;font-size:12px}
-
-/* Toast */
 .toast{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);padding:8px 16px;background:var(--t);color:#fff;border-radius:8px;font-size:13px;font-weight:500;z-index:200;white-space:nowrap}
 .toast.ok{background:var(--gn)}.toast.err{background:var(--rd)}
-
-@media(max-width:400px){
-  .cg{grid-template-columns:1fr}
-  .fg{grid-template-columns:1fr}
-  .fa{grid-column:span 1}
-  .tabs{gap:2px}
-  .tab{padding:5px 8px;font-size:11px}
-  .bal-v{font-size:26px}
-}
+@media(max-width:400px){.cg{grid-template-columns:1fr}.fg{grid-template-columns:1fr}.fa{grid-column:span 1}.tabs{gap:2px}.tab{padding:5px 8px;font-size:11px}.bal-v{font-size:26px}}
 </style>
 </head>
 <body>
@@ -153,7 +123,6 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
 </div></nav>
 
 <main class="m">
-  <!-- Individual View -->
   <div class="bal" id="balCard">
     <div class="bal-l">Balance</div>
     <div class="bal-v" id="bal">$0</div>
@@ -163,7 +132,6 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
     </div>
   </div>
 
-  <!-- Household Comparison -->
   <div class="cmp" id="cmpView">
     <div class="cmp-t">Household</div>
     <div class="cmp-row">
@@ -212,7 +180,6 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
   <div class="sec"><div class="st">Transactions</div><div id="txs"><div class="spin"></div></div></div>
 </main>
 
-<!-- Settings -->
 <div class="mo" id="modal">
   <div class="mo-bg" id="moBg"></div>
   <div class="mo-b">
@@ -226,8 +193,13 @@ button,select,input{font:inherit;-webkit-appearance:none;appearance:none}
   </div>
 </div>
 
+<!-- IMPORTANT: config.js MUST load before app.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="config.js"></script>
+<script>
+// Fallback if config.js doesn't exist
+window.BUDGET_API = window.BUDGET_API || '';
+</script>
+<script src="config.js" onerror="console.log('config.js not found, using settings')"></script>
 <script src="app.js"></script>
 </body>
 </html>
