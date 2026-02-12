@@ -3,9 +3,17 @@ var D = null;
 var V = localStorage.getItem('bv') || 'household';
 var FU = 'user1';
 var cC = null, dC = null;
-var EDIT_ROW = null; // Track if editing
-var DEL_ROW = null;  // Track delete target
+var EDIT_ROW = null;
+var DEL_ROW = null;
 var $ = function(id) { return document.getElementById(id); };
+
+// Color palette
+var COLORS = {
+    cream: '#FBF5DD',
+    sage: '#A6CDC6',
+    dark: '#16404D',
+    gold: '#DDA853'
+};
 
 Chart.defaults.animation = false;
 Chart.defaults.responsive = true;
@@ -114,7 +122,6 @@ function names() {
     }
 }
 
-// Toggle form for ADD
 function tf() {
     EDIT_ROW = null;
     var f = $('fm');
@@ -129,11 +136,9 @@ function tf() {
     }
 }
 
-// Open form for EDIT
 function editTx(row) {
     if (!D || !D.tx) return;
 
-    // Find transaction
     var tx = null;
     for (var i = 0; i < D.tx.length; i++) {
         if (D.tx[i].r === row) {
@@ -149,21 +154,18 @@ function editTx(row) {
     $('fmTitle').textContent = 'EDIT TRANSACTION';
     $('fmEditId').textContent = '#' + row;
 
-    // Fill form
     $('fDate').value = tx.d;
     $('fDesc').value = tx.ds || '';
     $('fCat').value = tx.c || '';
     $('fAmt').value = Math.abs(tx.a) || '';
     $('fType').value = tx.t || 'Expense';
 
-    // Set user
     var isU1 = tx.u === D.u.user1;
     sfu(isU1 ? 'user1' : 'user2');
 
     $('fDesc').focus();
 }
 
-// Hide form
 function hf() {
     EDIT_ROW = null;
     $('fm').classList.remove('show');
@@ -328,96 +330,129 @@ function draw() {
 }
 
 function doCharts(vs) {
+    // Destroy old charts
     try { if (cC) { cC.destroy(); cC = null; } } catch(e) {}
     try { if (dC) { dC.destroy(); dC = null; } } catch(e) {}
 
-    var catParent = $('cC').parentElement;
-    catParent.innerHTML = '<canvas id="cC"></canvas>';
-    var dayParent = $('dC').parentElement;
-    dayParent.innerHTML = '<canvas id="dC"></canvas>';
+    // Reset canvas elements
+    $('catChartWrap').innerHTML = '<canvas id="cC"></canvas>';
+    $('dayChartWrap').innerHTML = '<canvas id="dC"></canvas>';
 
     var cs = vs.cs || {};
     var ds = vs.ds || {};
 
+    // Prepare category data
     var cd = [];
-    for (var k in cs) { if (cs[k].s > 0) cd.push([k, cs[k].s]); }
+    for (var k in cs) {
+        if (cs[k].s > 0) {
+            cd.push({name: k, value: cs[k].s});
+        }
+    }
+
+    // Prepare daily data
     var dd = [];
-    for (var k in ds) { dd.push([parseInt(k), ds[k]]); }
-    dd.sort(function(a, b) { return a[0] - b[0]; });
+    for (var k in ds) {
+        dd.push({day: parseInt(k), value: ds[k]});
+    }
+    dd.sort(function(a, b) { return a.day - b.day; });
 
-    var colors = ['#25343F', '#FF9B51', '#BFC9D1', '#EAEFEF', '#3D5261', '#E8863F', '#8A9DA8'];
+    // 4 color palette for charts
+    var chartColors = [COLORS.dark, COLORS.gold, COLORS.sage, COLORS.cream];
 
+    // Category Chart (Doughnut)
     if (cd.length > 0) {
-        cC = new Chart($('cC'), {
-            type: 'doughnut',
-            data: {
-                labels: cd.map(function(x) { return x[0].toUpperCase(); }),
-                datasets: [{
-                    data: cd.map(function(x) { return x[1]; }),
-                    backgroundColor: colors.slice(0, cd.length),
-                    borderWidth: 3,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                cutout: '55%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 10,
-                            boxHeight: 10,
-                            font: { size: 9, weight: 'bold' },
-                            padding: 6,
-                            color: '#25343F'
+        var ctx1 = $('cC');
+        if (ctx1) {
+            cC = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: cd.map(function(x) { return x.name.toUpperCase(); }),
+                    datasets: [{
+                        data: cd.map(function(x) { return x.value; }),
+                        backgroundColor: cd.map(function(x, i) {
+                            return chartColors[i % chartColors.length];
+                        }),
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    cutout: '50%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                boxHeight: 12,
+                                font: { size: 10, weight: 'bold' },
+                                padding: 8,
+                                color: COLORS.dark
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     } else {
-        $('cC').parentElement.innerHTML = '<div class="empty">NO DATA</div>';
+        $('catChartWrap').innerHTML = '<div class="empty">NO SPENDING DATA</div>';
     }
 
+    // Daily Chart (Bar)
     if (dd.length > 0) {
-        dC = new Chart($('dC'), {
-            type: 'bar',
-            data: {
-                labels: dd.map(function(x) { return x[0]; }),
-                datasets: [{
-                    data: dd.map(function(x) { return x[1]; }),
-                    backgroundColor: '#FF9B51',
-                    borderColor: '#25343F',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(v) { return '$' + v; },
-                            font: { size: 9 },
-                            color: '#7A8E9A'
-                        },
-                        grid: { color: '#EAEFEF', lineWidth: 2 },
-                        border: { color: '#25343F', width: 2 }
+        var ctx2 = $('dC');
+        if (ctx2) {
+            dC = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: dd.map(function(x) { return x.day; }),
+                    datasets: [{
+                        data: dd.map(function(x) { return x.value; }),
+                        backgroundColor: COLORS.gold,
+                        borderColor: COLORS.dark,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: false }
                     },
-                    x: {
-                        grid: { display: false },
-                        ticks: { font: { size: 9 }, color: '#7A8E9A' },
-                        border: { color: '#25343F', width: 2 }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(v) { return '$' + v; },
+                                font: { size: 10, weight: 'bold' },
+                                color: COLORS.dark
+                            },
+                            grid: {
+                                color: COLORS.sage,
+                                lineWidth: 1
+                            },
+                            border: {
+                                color: COLORS.dark,
+                                width: 2
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 10, weight: 'bold' },
+                                color: COLORS.dark
+                            },
+                            border: {
+                                color: COLORS.dark,
+                                width: 2
+                            }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     } else {
-        $('dC').parentElement.innerHTML = '<div class="empty">NO DATA</div>';
+        $('dayChartWrap').innerHTML = '<div class="empty">NO DAILY DATA</div>';
     }
 }
 
-// Save (Add or Edit)
 function saveTx(e) {
     e.preventDefault();
     if (!API) return toast('SET API URL', 'err');
@@ -437,7 +472,6 @@ function saveTx(e) {
         return toast('FILL ALL FIELDS', 'err');
     }
 
-    // If editing, delete old then add new
     if (EDIT_ROW) {
         toast('UPDATING...');
         fetch(API + '?action=del&r=' + EDIT_ROW)
@@ -475,20 +509,17 @@ function saveTx(e) {
     }
 }
 
-// Show delete confirmation
 function delTx(row, desc, amt) {
     DEL_ROW = row;
     $('delText').innerHTML = 'Delete <strong>' + (desc || 'this transaction').toUpperCase() + '</strong> ($' + Math.abs(amt).toFixed(2) + ')?';
     $('delModal').classList.add('show');
 }
 
-// Hide delete modal
 function hdm() {
     DEL_ROW = null;
     $('delModal').classList.remove('show');
 }
 
-// Confirm delete
 function confirmDel() {
     if (!DEL_ROW) return;
     var row = DEL_ROW;
