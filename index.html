@@ -6,41 +6,85 @@
     <title>Budget</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{--bg:#fafafa;--card:#fff;--text:#000;--text2:#666;--text3:#999;--border:#eee;--accent:#000;--green:#00c896;--red:#ff5252}
+        :root{--bg:#fafafa;--card:#fff;--text:#000;--text2:#666;--text3:#999;--border:#eee;--accent:#000;--green:#00c896;--red:#ff5252;--blue:#4a90d9;--purple:#9b59b6}
         body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-        .nav{background:var(--card);border-bottom:1px solid var(--border);padding:1rem;position:sticky;top:0;z-index:100}
-        .nav-inner{max-width:800px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
-        .logo{font-weight:600;font-size:1.1rem}
+        
+        /* Nav */
+        .nav{background:var(--card);border-bottom:1px solid var(--border);padding:.75rem 1rem;position:sticky;top:0;z-index:100}
+        .nav-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+        .logo{font-weight:600;font-size:1.1rem;display:flex;align-items:center;gap:.5rem}
+        .nav-center{display:flex;gap:.25rem}
+        .user-btn{padding:.4rem .8rem;border:1px solid var(--border);background:var(--card);border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:500;transition:all .15s}
+        .user-btn:hover{border-color:var(--text2)}
+        .user-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+        .user-btn.u1.active{background:var(--blue);border-color:var(--blue)}
+        .user-btn.u2.active{background:var(--purple);border-color:var(--purple)}
         .nav-right{display:flex;gap:.5rem;align-items:center}
         select,input,button{font:inherit}
-        .sel{padding:.4rem .6rem;border:1px solid var(--border);border-radius:6px;background:var(--card)}
-        .btn-icon{width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:1.1rem}
-        .main{max-width:800px;margin:0 auto;padding:1.5rem 1rem}
-        .balance{background:var(--card);border-radius:12px;padding:2rem;text-align:center;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-        .balance-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
-        .balance-amount{font-size:2.5rem;font-weight:600;margin:.5rem 0 1rem}
-        .balance-row{display:flex;justify-content:center;gap:2rem}
-        .balance-item{text-align:center}
-        .balance-item span{display:block}
-        .balance-item .label{font-size:.7rem;color:var(--text3);text-transform:uppercase}
-        .balance-item .value{font-size:1.1rem;font-weight:600}
-        .income{color:var(--green)}
-        .expense{color:var(--red)}
+        .sel{padding:.35rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:.8rem}
+        .btn-icon{width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:1rem}
+        
+        /* Main */
+        .main{max-width:900px;margin:0 auto;padding:1.5rem 1rem}
+        
+        /* Stats Cards */
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+        .stat-card{background:var(--card);border-radius:12px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+        .stat-card.highlight{border-left:4px solid var(--accent)}
+        .stat-card.u1{border-left-color:var(--blue)}
+        .stat-card.u2{border-left-color:var(--purple)}
+        .stat-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem}
+        .stat-value{font-size:1.75rem;font-weight:600}
+        .stat-sub{font-size:.75rem;color:var(--text2);margin-top:.25rem}
+        .stat-sub .pct{font-weight:600}
+        .stat-sub .pct.u1{color:var(--blue)}
+        .stat-sub .pct.u2{color:var(--purple)}
+        
+        /* Comparison View */
+        .comparison{background:var(--card);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+        .comparison-title{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:1rem}
+        .comparison-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+        .comparison-row:last-child{margin-bottom:0}
+        .comparison-label{width:80px;font-size:.8rem;color:var(--text2)}
+        .comparison-bar{flex:1;height:24px;background:var(--bg);border-radius:4px;overflow:hidden;display:flex}
+        .comparison-fill{height:100%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#fff;min-width:40px}
+        .comparison-fill.u1{background:var(--blue)}
+        .comparison-fill.u2{background:var(--purple)}
+        .comparison-values{display:flex;justify-content:space-between;font-size:.75rem;margin-top:.25rem}
+        .comparison-values span:first-child{color:var(--blue)}
+        .comparison-values span:last-child{color:var(--purple)}
+        
+        /* Add Button */
         .add-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;margin:0 auto 1.5rem;padding:.6rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:50px;cursor:pointer;font-weight:500;font-size:.875rem}
+        .add-btn.u1{background:var(--blue)}
+        .add-btn.u2{background:var(--purple)}
         .add-btn:hover{opacity:.9}
+        
+        /* Form */
         .form-card{background:var(--card);border-radius:12px;padding:1rem;margin-bottom:1.5rem;display:none}
         .form-card.show{display:block}
+        .form-user{display:flex;gap:.5rem;margin-bottom:.75rem}
+        .form-user-btn{flex:1;padding:.5rem;border:1px solid var(--border);background:var(--card);border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:500}
+        .form-user-btn.active{color:#fff}
+        .form-user-btn.u1.active{background:var(--blue);border-color:var(--blue)}
+        .form-user-btn.u2.active{background:var(--purple);border-color:var(--purple)}
         .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
         .form-grid input,.form-grid select{padding:.6rem;border:1px solid var(--border);border-radius:6px;width:100%}
         .form-actions{grid-column:span 2;display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem}
         .btn{padding:.5rem 1rem;border:none;border-radius:6px;cursor:pointer;font-weight:500;font-size:.875rem}
         .btn-p{background:var(--accent);color:#fff}
         .btn-s{background:transparent;border:1px solid var(--border)}
+        
+        /* Section */
         .section{background:var(--card);border-radius:12px;padding:1rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
         .section-title{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:1rem}
+        
+        /* Charts */
         .charts{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
         .chart-box{background:var(--card);border-radius:12px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
         .chart-wrap{height:180px;position:relative}
+        
+        /* Budgets */
         .budget-item{padding:.75rem;background:var(--bg);border-radius:8px;margin-bottom:.5rem}
         .budget-item:last-child{margin-bottom:0}
         .budget-head{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.4rem}
@@ -48,21 +92,33 @@
         .budget-fill{height:100%;background:var(--accent);border-radius:2px}
         .budget-fill.warn{background:#ffb700}
         .budget-fill.over{background:var(--red)}
+        
+        /* Transactions */
         .trans-item{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid var(--border)}
         .trans-item:last-child{border-bottom:none}
-        .trans-left{flex:1}
+        .trans-left{flex:1;display:flex;align-items:center;gap:.75rem}
+        .trans-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#fff;flex-shrink:0}
+        .trans-avatar.u1{background:var(--blue)}
+        .trans-avatar.u2{background:var(--purple)}
+        .trans-info{flex:1}
         .trans-desc{font-size:.875rem;font-weight:500}
         .trans-meta{font-size:.7rem;color:var(--text3);display:flex;gap:.5rem;align-items:center;margin-top:.2rem}
         .trans-cat{background:var(--bg);padding:.1rem .4rem;border-radius:3px;font-size:.65rem;text-transform:uppercase}
         .trans-right{display:flex;align-items:center;gap:.75rem}
         .trans-amt{font-weight:600;font-size:.875rem}
+        .income{color:var(--green)}
+        .expense{color:var(--text)}
         .del-btn{opacity:0;background:none;border:none;color:var(--text3);cursor:pointer;padding:.25rem;font-size:1rem}
         .trans-item:hover .del-btn{opacity:1}
         .del-btn:hover{color:var(--red)}
+        
+        /* Empty/Loading */
         .empty{text-align:center;color:var(--text3);padding:2rem;font-size:.875rem}
         .loading{text-align:center;padding:2rem}
         .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
         @keyframes spin{to{transform:rotate(360deg)}}
+        
+        /* Modal */
         .modal{display:none;position:fixed;inset:0;z-index:1000}
         .modal.show{display:block}
         .modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
@@ -76,19 +132,37 @@
         .set-label{font-size:.8rem;font-weight:500;margin-bottom:.4rem;display:block}
         .set-input{width:100%;padding:.6rem;border:1px solid var(--border);border-radius:6px}
         .set-help{font-size:.7rem;color:var(--text3);margin-top:.3rem}
+        .set-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
         .cat-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem;background:var(--bg);border-radius:6px;margin-bottom:.5rem}
         .cat-input{width:80px;padding:.4rem;border:1px solid var(--border);border-radius:4px;text-align:right}
+        
+        /* Toast */
         .toast{position:fixed;bottom:1rem;right:1rem;padding:.6rem 1rem;background:var(--accent);color:#fff;border-radius:6px;font-size:.875rem;z-index:2000;animation:slideIn .3s}
         .toast.ok{background:var(--green)}
         .toast.err{background:var(--red)}
         @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-        @media(max-width:600px){.charts{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.form-actions{grid-column:span 1}.balance-amount{font-size:2rem}.del-btn{opacity:1}}
+        
+        /* Responsive */
+        @media(max-width:600px){
+            .charts{grid-template-columns:1fr}
+            .form-grid{grid-template-columns:1fr}
+            .form-actions{grid-column:span 1}
+            .stat-value{font-size:1.5rem}
+            .del-btn{opacity:1}
+            .nav-inner{justify-content:center}
+            .comparison-label{width:60px;font-size:.7rem}
+        }
     </style>
 </head>
 <body>
     <nav class="nav">
         <div class="nav-inner">
             <div class="logo">◐ Budget</div>
+            <div class="nav-center">
+                <button class="user-btn u1" data-view="user1" id="btnUser1">Me</button>
+                <button class="user-btn u2" data-view="user2" id="btnUser2">Partner</button>
+                <button class="user-btn active" data-view="household" id="btnHousehold">Both</button>
+            </div>
             <div class="nav-right">
                 <select id="month" class="sel"></select>
                 <select id="year" class="sel"></select>
@@ -98,17 +172,68 @@
     </nav>
 
     <main class="main">
-        <div class="balance">
-            <div class="balance-label">Balance</div>
-            <div class="balance-amount" id="balance">$0.00</div>
-            <div class="balance-row">
-                <div class="balance-item">
-                    <span class="label">Income</span>
-                    <span class="value income" id="income">+$0</span>
+        <!-- Individual View Stats -->
+        <div class="stats-grid" id="individualStats">
+            <div class="stat-card highlight" id="statCardMain">
+                <div class="stat-label">Balance</div>
+                <div class="stat-value" id="balance">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Income</div>
+                <div class="stat-value income" id="income">+$0</div>
+                <div class="stat-sub"><span class="pct" id="incomePct">0%</span> of household</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Expenses</div>
+                <div class="stat-value" id="expenses">$0</div>
+                <div class="stat-sub"><span class="pct" id="expensePct">0%</span> of household</div>
+            </div>
+        </div>
+
+        <!-- Household Comparison View -->
+        <div class="comparison" id="comparisonView" style="display:none">
+            <div class="comparison-title">Household Overview</div>
+            
+            <div class="comparison-row">
+                <div class="comparison-label">Income</div>
+                <div style="flex:1">
+                    <div class="comparison-bar">
+                        <div class="comparison-fill u1" id="incomeBar1" style="width:50%">50%</div>
+                        <div class="comparison-fill u2" id="incomeBar2" style="width:50%">50%</div>
+                    </div>
+                    <div class="comparison-values">
+                        <span id="incomeVal1">$0</span>
+                        <span id="incomeVal2">$0</span>
+                    </div>
                 </div>
-                <div class="balance-item">
-                    <span class="label">Expenses</span>
-                    <span class="value expense" id="expenses">-$0</span>
+            </div>
+            
+            <div class="comparison-row">
+                <div class="comparison-label">Expenses</div>
+                <div style="flex:1">
+                    <div class="comparison-bar">
+                        <div class="comparison-fill u1" id="expenseBar1" style="width:50%">50%</div>
+                        <div class="comparison-fill u2" id="expenseBar2" style="width:50%">50%</div>
+                    </div>
+                    <div class="comparison-values">
+                        <span id="expenseVal1">$0</span>
+                        <span id="expenseVal2">$0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-top:1.5rem;text-align:center">
+                <div>
+                    <div class="stat-label">Total Income</div>
+                    <div style="font-size:1.25rem;font-weight:600;color:var(--green)" id="totalIncome">$0</div>
+                </div>
+                <div>
+                    <div class="stat-label">Total Expenses</div>
+                    <div style="font-size:1.25rem;font-weight:600" id="totalExpenses">$0</div>
+                </div>
+                <div>
+                    <div class="stat-label">Net Balance</div>
+                    <div style="font-size:1.25rem;font-weight:600" id="totalBalance">$0</div>
                 </div>
             </div>
         </div>
@@ -116,6 +241,10 @@
         <button class="add-btn" id="addBtn">+ Add Transaction</button>
 
         <div class="form-card" id="formCard">
+            <div class="form-user">
+                <button type="button" class="form-user-btn u1 active" id="formUser1">Me</button>
+                <button type="button" class="form-user-btn u2" id="formUser2">Partner</button>
+            </div>
             <form id="txForm" class="form-grid">
                 <input type="date" id="txDate" required>
                 <input type="text" id="txDesc" placeholder="Description" required>
@@ -124,7 +253,7 @@
                 <select id="txType"><option value="Expense">Expense</option><option value="Income">Income</option></select>
                 <div class="form-actions">
                     <button type="button" class="btn btn-s" id="cancelBtn">Cancel</button>
-                    <button type="submit" class="btn btn-p">Save</button>
+                    <button type="submit" class="btn btn-p" id="submitBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -146,11 +275,12 @@
         </div>
 
         <div class="section">
-            <div class="section-title">Recent</div>
+            <div class="section-title">Transactions</div>
             <div id="transactions"><div class="loading"><div class="spinner"></div></div></div>
         </div>
     </main>
 
+    <!-- Settings Modal -->
     <div class="modal" id="modal">
         <div class="modal-bg" id="modalBg"></div>
         <div class="modal-box">
@@ -161,16 +291,23 @@
             <div class="modal-body">
                 <div class="set-group">
                     <label class="set-label">Google Script URL</label>
-                    <input type="text" id="apiUrl" class="set-input" placeholder="https://script.google.com/macros/s/AKfycbxXB1lzyifEU1KhkoYI5jxZsLeSNoMRFma4tjHEw1zIPs6A1WtdInlQbCmrESf4T_GV/exec">
+                    <input type="text" id="apiUrl" class="set-input" placeholder="https://script.google.com/...">
                     <p class="set-help">Your deployed Google Apps Script Web App URL</p>
                 </div>
                 <div class="set-group">
-                    <label class="set-label">Category Budgets</label>
+                    <label class="set-label">User Names</label>
+                    <div class="set-row">
+                        <input type="text" id="userName1" class="set-input" placeholder="Your name" style="border-left:3px solid var(--blue)">
+                        <input type="text" id="userName2" class="set-input" placeholder="Partner's name" style="border-left:3px solid var(--purple)">
+                    </div>
+                </div>
+                <div class="set-group">
+                    <label class="set-label">Category Budgets (per person)</label>
                     <div id="catList"></div>
                 </div>
             </div>
             <div class="modal-foot">
-                <button class="btn btn-p" id="saveSettings">Save</button>
+                <button class="btn btn-p" id="saveSettings">Save Changes</button>
             </div>
         </div>
     </div>
